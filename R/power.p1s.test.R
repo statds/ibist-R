@@ -53,6 +53,10 @@
 #'   exact = TRUE, exact.method = "cp"
 #' )
 #'
+#' @importFrom stats dbinom pbinom qbinom
+#' @importFrom stats dnorm pnorm qnorm
+#' @importFrom stats uniroot density
+#
 #' @export
 power.p1s.test <- function(
   n = NULL,
