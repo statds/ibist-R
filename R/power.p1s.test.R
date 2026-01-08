@@ -103,25 +103,27 @@ power.p1s.test <- function(
     )
   }
 
+  midp = exact.method == "midp"
+
   ## ---- exact quantile rejection region cache ----
   rr_cache <- new.env(parent = emptyenv())
 
-  get_rr <- function(n, p0, alpha) {
-    key <- paste(n, p0, alpha, alternative, sep = "|")
+  get_rr <- function(n, p0, sig.level) {
+    key <- paste(n, p0, sig.level, alternative, sep = "|")
     if (exists(key, envir = rr_cache, inherits = FALSE))
       return(get(key, envir = rr_cache, inherits = FALSE))
 
     if (alternative == "greater") {
       rr <- list(type = "greater",
-                 k = qbinom(1 - alpha, n, p0))
+                 k = qbinom(1 - sig.level, n, p0))
     } else if (alternative == "less") {
       rr <- list(type = "less",
-                 k = qbinom(alpha, n, p0))
+                 k = qbinom(sig.level, n, p0))
     } else {
       rr <- list(
         type = "two.sided",
-        k_lo = qbinom(alpha / 2, n, p0),
-        k_hi = qbinom(1 - alpha / 2, n, p0)
+        k_lo = qbinom(sig.level / 2, n, p0),
+        k_hi = qbinom(1 - sig.level / 2, n, p0)
       )
     }
 
@@ -131,26 +133,26 @@ power.p1s.test <- function(
 
   ## ---- power bodies ----
 
-  approx_power_body <- function(n, p0, p1, alpha) {
+  approx_power_body <- quote({
     se0 <- sqrt(p0 * (1 - p0) / n)
     se1 <- sqrt(p1 * (1 - p1) / n)
     delta <- if (cc) 0.5 / n else 0
 
     if (alternative == "greater") {
-      z <- qnorm(1 - alpha)
-      1 - pnorm((p0 + z * se0 - delta - p1) / se1)
+      z <- qnorm(1 - sig.level)
+      1 - pnorm((p0 + z * se0 + delta - p1) / se1)
     } else if (alternative == "less") {
-      z <- qnorm(1 - alpha)
-      pnorm((p0 - z * se0 + delta - p1) / se1)
+      z <- qnorm(1 - sig.level)
+      pnorm((p0 - z * se0 - delta - p1) / se1)
     } else {
-      z <- qnorm(1 - alpha / 2)
-      pnorm((p0 - z * se0 + delta - p1) / se1) +
-        1 - pnorm((p0 + z * se0 - delta - p1) / se1)
+      z <- qnorm(1 - sig.level / 2)
+      pnorm((p0 - z * se0 - delta - p1) / se1) +
+        1 - pnorm((p0 + z * se0 + delta - p1) / se1)
     }
-  }
+  })
 
-  exact_quantile_power_body <- function(n, p0, p1, alpha, midp) {
-    rr <- get_rr(n, p0, alpha)
+  exact_quantile_power_body <- quote({
+    rr <- get_rr(n, p0, sig.level)
 
     if (rr$type == "greater") {
       k <- rr$k
@@ -179,76 +181,59 @@ power.p1s.test <- function(
           pbinom(k_hi - 1, n, p1, lower.tail = FALSE)
       }
     }
-  }
+  })
 
-  cp_power_body <- function(n, p0, p1, alpha) {
+  cp_power_body <- quote({
     x <- 0:n
     reject <- if (alternative == "greater") {
-      pbinom(x - 1, n, p0, lower.tail = FALSE) <= alpha
+      pbinom(x - 1, n, p0, lower.tail = FALSE) <= sig.level
     } else if (alternative == "less") {
-      pbinom(x, n, p0) <= alpha
+      pbinom(x, n, p0) <= sig.level
     } else {
       2 * pmin(
         pbinom(x, n, p0),
         pbinom(x - 1, n, p0, lower.tail = FALSE)
-      ) <= alpha
+      ) <= sig.level
     }
     sum(dbinom(x[reject], n, p1))
-  }
+  })
 
   ## ---- dispatch ----
   if (!exact) {
     power_body <- approx_power_body
-    midp <- FALSE
+    midp <- NA
   } else if (exact.method == "cp") {
     power_body <- cp_power_body
-    midp <- FALSE
-  } else if (exact.method == "midp") {
-    power_body <- function(n, p0, p1, alpha)
-      exact_quantile_power_body(n, p0, p1, alpha, midp = TRUE)
-    midp <- TRUE
+    midp <- NA
   } else {
-    power_body <- function(n, p0, p1, alpha)
-      exact_quantile_power_body(n, p0, p1, alpha, midp = FALSE)
-    midp <- FALSE
+    power_body <- exact_quantile_power_body
   }
 
   ## ---- solve for missing parameter ----
   if (is.null(power)) {
-    power <- power_body(n, p0, p1, sig.level)
+    power <- eval(power_body)
   }
 
   if (is.null(n)) {
-    f <- function(nn) power_body(nn, p0, p1, sig.level) - power
-    n_lo <- 1L
-    if (f(n_lo) >= 0) {
-      n <- n_lo
-    } else {
-      n_hi <- 2L
-      while (f(n_hi) < 0) {
-        n_hi <- n_hi * 2L
-        if (n_hi > max_n)
-          stop("Required n exceeds 'max_n'", call. = FALSE)
-      }
-      n <- as.integer(ceiling(uniroot(f, c(n_lo, n_hi), tol = tol)$root))
-    }
+      n <- uniroot(function(n) eval(power_body) - power,
+                   c(1, max_n), tol = tol)$root
   }
-
+  
   if (is.null(p1)) {
-    f <- function(pp) power_body(n, p0, pp, sig.level) - power
-    p1 <- uniroot(f, c(tol, 1 - tol), tol = tol)$root
+      p1 <- uniroot(function(pp) eval(power_body) - power,
+                    c(tol, 1 - tol), tol = tol)$root
   }
 
   if (is.null(p0)) {
-    f <- function(pp) power_body(n, pp, p1, sig.level) - power
-    p0 <- uniroot(f, c(tol, 1 - tol), tol = tol)$root
+      p0 <- uniroot(function(pp) eval(power_body) - power,
+                    c(tol, 1 - tol), tol = tol)$root
   }
-
+  
   if (is.null(sig.level)) {
-    f <- function(a) power_body(n, p0, p1, a) - power
-    sig.level <- uniroot(f, c(tol, 1 - tol), tol = tol)$root
+      sig.level <- uniroot(function(a) eval(power_body) - power,
+                           c(tol, 1 - tol), tol = tol)$root
   }
-
+  
   ## ---- return object ----
   method <- if (!exact)
     "One-sample proportion power calculation (normal approximation)"
@@ -267,7 +252,6 @@ power.p1s.test <- function(
       sig.level = sig.level,
       power = power,
       alternative = alternative,
-      note = "n is sample size for the single group",
       method = method
     ),
     class = "power.htest"
