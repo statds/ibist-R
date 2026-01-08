@@ -115,15 +115,15 @@ power.p1s.test <- function(
 
     if (alternative == "greater") {
       rr <- list(type = "greater",
-                 k = qbinom(1 - sig.level, n, p0))
+                 k = qbinom(1 - sig.level, n, p0) + 1L)
     } else if (alternative == "less") {
       rr <- list(type = "less",
-                 k = qbinom(sig.level, n, p0))
+                 k = qbinom(sig.level, n, p0) - 1L)
     } else {
       rr <- list(
         type = "two.sided",
-        k_lo = qbinom(sig.level / 2, n, p0),
-        k_hi = qbinom(1 - sig.level / 2, n, p0)
+        k_lo = qbinom(sig.level / 2, n, p0) - 1L,
+        k_hi = qbinom(1 - sig.level / 2, n, p0) + 1L
       )
     }
 
@@ -164,8 +164,7 @@ power.p1s.test <- function(
     } else if (rr$type == "less") {
       k <- rr$k
       if (midp)
-        pbinom(k - 1, n, p1) +
-          0.5 * dbinom(k, n, p1)
+        pbinom(k - 1, n, p1) + 0.5 * dbinom(k, n, p1)
       else
         pbinom(k, n, p1)
     } else {
@@ -215,9 +214,58 @@ power.p1s.test <- function(
   }
 
   if (is.null(n)) {
-      n <- uniroot(function(n) eval(power_body) - power,
-                   c(1, max_n), tol = tol)$root
+      if (!exact) {
+          n <- uniroot(function(n) eval(power_body) - power,
+                       c(1, max_n), tol = tol,
+                       extendInt = "upX")$root
+      } else {
+          power_at_n <- function(nn) {
+              n <- as.integer(nn)
+              eval(power_body)
+          }
+          
+          alpha_at_n <- function(nn) {
+              n <- as.integer(nn)
+              p1 <- p0
+              eval(power_body)
+          }
+          
+          if (exact.method == "cp") {
+              feasible <- function(nn) {
+                      (power_at_n(nn) >= power)
+              }
+              
+          } else {
+              ## quantile / mid-p: enforce size <= nominal (optionally also add
+              ## a tol.alpha rule if you want parity across exact methods).
+              feasible <- function(nn) {
+                  (alpha_at_n(nn) <= sig.level) &&
+                      (power_at_n(nn) >= power)
+              }
+          }
+          
+          ## ---- exponential bracketing + integer bisection ----
+          n_lo <- 1L
+          if (feasible(n_lo)) {
+              n <- n_lo
+          } else {
+              n_hi <- 2L
+              while (!feasible(n_hi)) {
+                  n_lo <- n_hi
+                  n_hi <- n_hi * 2L
+                  if (n_hi > max_n)
+                      stop("Required n exceeds 'max_n'", call. = FALSE)
+              }
+              while (n_hi - n_lo > 1L) {
+                  n_mid <- (n_lo + n_hi) %/% 2L
+                  if (feasible(n_mid)) n_hi <- n_mid else n_lo <- n_mid
+              }
+              n <- n_hi
+          }
+          power <- power_at_n(n)
+      }
   }
+
   
   if (is.null(p1)) {
       p1 <- uniroot(function(pp) eval(power_body) - power,
