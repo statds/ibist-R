@@ -7,42 +7,45 @@
 demo_clt(rng, n, nrep = 10000, ..., mean = NULL, sd = NULL)
 }
 \arguments{
-\item{rng}{A random number generator function (e.g., `runif`,
-`rnorm`, `rgamma`).}
+\item{rng}{A random number generator function taking the sample size
+as its first argument (e.g., \code{runif}, \code{rnorm},
+\code{rgamma}).}
 
-\item{n}{A numeric vector of sample sizes (e.g., `c(5, 10,
-20, 40)`).}
+\item{n}{A numeric vector of sample sizes (e.g., \code{c(5, 10, 20,
+40)}).}
 
-\item{nrep}{The number of repetitions for generating sample
-means (default is 10000).}
+\item{nrep}{The number of repetitions for generating sample means
+(default is 10000).}
 
-\item{...}{Additional arguments passed to the random number
-generator (e.g., `shape` and `rate` for `rgamma`).}
+\item{...}{Additional arguments passed to the random number generator
+(e.g., \code{shape} and \code{rate} for \code{rgamma}).}
 
-\item{mean}{The theoretical mean of the distribution. If not
-provided, it is estimated from a large sample.}
+\item{mean}{The theoretical mean of the distribution. If \code{NULL},
+it is estimated from a large Monte Carlo sample.}
 
-\item{sd}{The theoretical standard deviation of the
-distribution. If not provided, it is estimated from a large
-sample.}
+\item{sd}{The theoretical standard deviation of the distribution.
+If \code{NULL}, it is estimated from a large Monte Carlo sample.}
 }
 \value{
-A `ggplot2` plot showing the standardized sampling
-distributions for different sample sizes, compared against
-the standard normal curve.
+A \code{ggplot2} object showing the standardized sampling
+  distributions for different sample sizes, compared against the
+  standard normal curve.
 }
 \description{
-The `demo_clt()` function generates plots to illustrate the
-Central Limit Theorem (CLT) using a specified random number
-generator. The function displays the sampling distributions
-for different sample sizes, standardized and compared against
-the standard normal distribution.
+The \code{demo_clt()} function generates plots to illustrate the
+Central Limit Theorem (CLT) using a specified random number generator.
+The function displays standardized sampling distributions for
+different sample sizes and overlays the standard normal density.
 }
 \examples{
 set.seed(123)
-demo_clt(runif, n = c(5, 10, 20, 40), nrep = 10000, min = 0,
-max = 1)
-demo_clt(rgamma, n = c(5, 10, 20, 40), nrep = 10000, shape = 2,
-rate = 1, mean = 2, sd = sqrt(2))
+demo_clt(runif, n = c(5, 10, 20, 40), min = 0, max = 1)
+
+demo_clt(
+  rgamma,
+  n = c(5, 10, 20, 40),
+  shape = 2, rate = 1,
+  mean = 2, sd = sqrt(2)
+)
 
 }
