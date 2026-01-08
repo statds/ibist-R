@@ -1,6 +1,6 @@
 Package: ibist
-Title: Companion to Introduction to Biostatistics with R
-Version: 0.0-1
+Title: Data and Functions for Introduction to Biostatistics with R
+Version: 0.1-0
 Authors@R: c(
     person(given = "Elizabeth", family = "Schifano",
            role = c("aut"),
@@ -10,15 +10,19 @@ Authors@R: c(
            role = c("aut", "cre"),
            comment = c(ORCID = "0000-0003-4401-7296"))
     )
-Description: Datasets and functions in the book
-    "Introduction to Biostatistics with R" by
-    Schifano and Yan (2025), Taylor Francis.
+Description: Provides datasets and supporting functions for the book
+    Introduction to Biostatistics with R by Schifano and Yan (2026+),
+    published by Taylor & Francis. The package is intended for teaching
+    introductory biostatistics and for reproducing examples in the text.
 Depends:
-    R (>= 4.4.1)
+    R (>= 4.4.0)
 VignetteBuilder: knitr
-Suggests: knitr, rmarkdown
 License: GPL (>= 3)
 URL: https://github.com/statds/ibist-R
 BugReports: https://github.com/statds/ibist-R/issues
-Imports: ggplot2
+Imports: stats, rlang, ggplot2
+Suggests: knitr, testthat (>= 3.0.0)
+LazyData: true
 RoxygenNote: 7.3.2
+Encoding: UTF-8
+Config/testthat/edition: 3
