@@ -1,4 +1,4 @@
----
+mean---
 title: "Demonstrating the Central Limit Theorem"
 author: "Companion Package for Biostatistical Analysis of Proportions and Rates"
 date: "`r Sys.Date()`"
@@ -43,7 +43,7 @@ as the sample size increases.
 
 ```{r gamma-shape-0.5}
 demo_clt(rgamma, n = c(5, 10, 20, 40), nrep = 10000,
-         shape = 0.5, rate = 1, mean = 0.5, sd = sqrt(0.5))
+         shape = 0.5, rate = 1, pmean = 0.5, psd = sqrt(0.5))
 ```
 
 # Gamma Distribution with Shape = 1
@@ -54,7 +54,7 @@ and we observe the effect of increasing the sample size.
 
 ```{r gamma-shape-1}
 demo_clt(rgamma, n = c(5, 10, 20, 40), nrep = 10000,
-         shape = 1, rate = 1, mean = 1, sd = sqrt(1))
+         shape = 1, rate = 1, pmean = 1, psd = sqrt(1))
 ```
 
 # Gamma Distribution with Shape = 2
@@ -65,7 +65,7 @@ distribution even for smaller sample sizes.
 
 ```{r gamma-shape-2}
 demo_clt(rgamma, n = c(5, 10, 20, 40), nrep = 10000,
-         shape = 2, rate = 1, mean = 2, sd = sqrt(2))
+         shape = 2, rate = 1, pmean = 2, psd = sqrt(2))
 ```
 
 # A General Distribution Constructed from a Mixture
@@ -84,7 +84,6 @@ mymix_rng <- function(n, rate = 0.5) {
 demo_clt(mymix_rng, n = c(5, 10, 20, 40))
 
 ```
-
 
 # Conclusion
 

@@ -14,9 +14,9 @@
 #'   (default is 10000).
 #' @param ... Additional arguments passed to the random number generator
 #'   (e.g., \code{shape} and \code{rate} for \code{rgamma}).
-#' @param mean The theoretical mean of the distribution. If \code{NULL},
+#' @param pmean The population mean of the distribution. If \code{NULL},
 #'   it is estimated from a large Monte Carlo sample.
-#' @param sd The theoretical standard deviation of the distribution.
+#' @param psd The population standard deviation of the distribution.
 #'   If \code{NULL}, it is estimated from a large Monte Carlo sample.
 #'
 #' @return A \code{ggplot2} object showing the standardized sampling
@@ -27,11 +27,8 @@
 #' set.seed(123)
 #' demo_clt(runif, n = c(5, 10, 20, 40), min = 0, max = 1)
 #'
-#' demo_clt(
-#'   rgamma,
-#'   n = c(5, 10, 20, 40),
-#'   shape = 2, rate = 1,
-#'   mean = 2, sd = sqrt(2)
+#' demo_clt(rgamma, n = c(5, 10, 20, 40), shape = 2, rate = 1,
+#'          pmean = 2, psd = sqrt(2)
 #' )
 #'
 #' @importFrom rlang .data
@@ -43,8 +40,8 @@ demo_clt <- function(
   n,
   nrep = 10000,
   ...,
-  mean = NULL,
-  sd = NULL
+  pmean = NULL,
+  psd = NULL
 ) {
   ## ---- basic validation ----
   if (!is.function(rng)) {
@@ -65,11 +62,11 @@ demo_clt <- function(
     )
   }
 
-  ## ---- estimate mean and sd if needed ----
-  if (is.null(mean) || is.null(sd)) {
+  ## ---- estimate pmean and psd if needed ----
+  if (is.null(pmean) || is.null(psd)) {
     sample_data <- rng(100000, ...)
-    mean <- base::mean(sample_data)
-    sd <- stats::sd(sample_data)
+    if (is.null(pmean)) pmean <- base::mean(sample_data)
+    if (is.null(psd)) psd <- stats::sd(sample_data)
   }
 
   ## ---- generate standardized sample means ----
@@ -77,17 +74,12 @@ demo_clt <- function(
   names(results) <- as.character(n)
 
   for (size in n) {
-    sample_means <- replicate(
-      nrep,
-      base::mean(rng(size, ...))
-    )
-
-    standardized_means <-
-      (sample_means - mean) / (sd / sqrt(size))
+    rng_local <- function() rng(size, ...)
+    sample_means <- replicate(nrep, base::mean(rng_local()))
 
     results[[as.character(size)]] <- data.frame(
-      StandardizedMean = standardized_means,
-      SampleSize = factor(size)
+      StdMean = (sample_means - pmean) / (psd / sqrt(size)),
+      SampleSize = size
     )
   }
 
@@ -103,7 +95,7 @@ demo_clt <- function(
   ## ---- plot ----
   ggplot2::ggplot(
   data,
-  ggplot2::aes(x = .data$StandardizedMean)
+  ggplot2::aes(x = .data$StdMean)
   ) +
   ggplot2::geom_histogram(
     ggplot2::aes(y = ggplot2::after_stat(density)),
@@ -121,7 +113,7 @@ demo_clt <- function(
   ggplot2::facet_wrap(~ SampleSize) +
   ggplot2::labs(
     title = "Demonstrating the Central Limit Theorem",
-    x = "Standardized Sample Mean",
+    x = "Standardized sample mean",
     y = "Density"
   ) +
   ggplot2::theme_minimal()

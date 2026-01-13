@@ -4,7 +4,7 @@
 \alias{demo_clt}
 \title{Demonstrate the Central Limit Theorem}
 \usage{
-demo_clt(rng, n, nrep = 10000, ..., mean = NULL, sd = NULL)
+demo_clt(rng, n, nrep = 10000, ..., pmean = NULL, psd = NULL)
 }
 \arguments{
 \item{rng}{A random number generator function taking the sample size
@@ -20,10 +20,10 @@ as its first argument (e.g., \code{runif}, \code{rnorm},
 \item{...}{Additional arguments passed to the random number generator
 (e.g., \code{shape} and \code{rate} for \code{rgamma}).}
 
-\item{mean}{The theoretical mean of the distribution. If \code{NULL},
+\item{pmean}{The population mean of the distribution. If \code{NULL},
 it is estimated from a large Monte Carlo sample.}
 
-\item{sd}{The theoretical standard deviation of the distribution.
+\item{psd}{The population standard deviation of the distribution.
 If \code{NULL}, it is estimated from a large Monte Carlo sample.}
 }
 \value{
@@ -41,11 +41,8 @@ different sample sizes and overlays the standard normal density.
 set.seed(123)
 demo_clt(runif, n = c(5, 10, 20, 40), min = 0, max = 1)
 
-demo_clt(
-  rgamma,
-  n = c(5, 10, 20, 40),
-  shape = 2, rate = 1,
-  mean = 2, sd = sqrt(2)
+demo_clt(rgamma, n = c(5, 10, 20, 40), shape = 2, rate = 1,
+         pmean = 2, psd = sqrt(2)
 )
 
 }
