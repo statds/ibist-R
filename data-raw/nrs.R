@@ -13,4 +13,14 @@ names(nrs) <- tolower(names(nrs))
 # Remove "_2013" suffix
 names(nrs) <- sub("_2013$", "", names(nrs))
 
+
+# Recode gender
+nrs$gender <- factor(nrs$gender,
+                     levels = c(1, 2),
+                     labels = c("M", "F"))
+
+# Recode nrs (1 -> 0, 2 -> 1)
+nrs$nrs <- nrs$nrs - 1
+
+## save 
 usethis::use_data(nrs, overwrite = TRUE)
