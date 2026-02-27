@@ -7,7 +7,7 @@
 rate.test(
   x,
   T,
-  r = NULL,
+  r = 1,
   alternative = c("two.sided", "less", "greater"),
   conf.level = 0.95,
   correct = TRUE
@@ -21,7 +21,7 @@ test; a vector of length two specifies a two-sample comparison.}
 Must have the same length as \code{x}.}
 
 \item{r}{a positive number specifying the null rate per unit exposure,
-\eqn{\lambda_0}, for a one-sample test. Ignored for two-sample tests.}
+\eqn{\lambda_0}, for a one-sample test. Detault to 1.0. Ignored for two-sample tests.}
 
 \item{alternative}{a character string specifying the alternative hypothesis,
 one of \code{"two.sided"}, \code{"less"}, or \code{"greater"}.}

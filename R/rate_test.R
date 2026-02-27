@@ -9,7 +9,7 @@
 #' @param T a vector of exposures corresponding to \code{x} (e.g., person-time).
 #'   Must have the same length as \code{x}.
 #' @param r a positive number specifying the null rate per unit exposure,
-#'   \eqn{\lambda_0}, for a one-sample test. Ignored for two-sample tests.
+#'   \eqn{\lambda_0}, for a one-sample test. Detault to 1.0. Ignored for two-sample tests.
 #' @param alternative a character string specifying the alternative hypothesis,
 #'   one of \code{"two.sided"}, \code{"less"}, or \code{"greater"}.
 #' @param conf.level confidence level for the confidence interval.
@@ -95,7 +95,7 @@
 #' rate.test(x = 411, T = 25800, r = 0.0119, alternative = "greater")
 #'
 #' @export
-rate.test <- function(x, T, r = NULL,
+rate.test <- function(x, T, r = 1.0,
                       alternative = c("two.sided", "less", "greater"),
                       conf.level = 0.95,
                       correct = TRUE)
