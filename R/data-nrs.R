@@ -10,18 +10,14 @@
 #' A data frame with 90,122 observations on the following variables:
 #' \describe{
 #'   \item{id}{Subject identifier.}
-#'   \item{Gender}{Gender of the subject (integer-coded).}
-#'   \item{Age_2013}{Age in years in 2013.}
-#'   \item{EX_2013}{Indicator of regular exercise in 2013
+#'   \item{gender}{Gender of the subject (integer-coded).}
+#'   \item{age}{Age in years in 2013.}
+#'   \item{ex}{Indicator of regular exercise in 2013
 #'   (integer-coded).}
-#'   \item{PA_2013}{Physical activity measure in 2013
+#'   \item{pa}{Physical activity measure in 2013
 #'   (integer-coded).}
-#'   \item{NRS_2013}{Indicator of non-restorative sleep in 2013
+#'   \item{nrs}{Indicator of non-restorative sleep in 2013
 #'   (1 = presence, 0 = absence).}
-#'   \item{AgeGroup_2013}{Categorical age group in 2013
-#'   (integer-coded).}
-#'   \item{EXPA_classification}{Combined classification of exercise and
-#'   physical activity status (integer-coded).}
 #' }
 #'
 #' @details
