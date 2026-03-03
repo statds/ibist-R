@@ -5,17 +5,18 @@
 \alias{nrs}
 \title{Non-restorative sleep and physical activity (Japan cohort study)}
 \format{
-A data frame with 90,122 observations on the following variables:
+A data frame with 91,795 subjects (90,122 complete records) on the
+following variables:#' 
 \describe{
   \item{id}{Subject identifier.}
-  \item{gender}{Gender of the subject (integer-coded).}
+  \item{gender}{Gender of the subject (F = Female; M = Male).}
   \item{age}{Age in years in 2013.}
   \item{ex}{Indicator of regular exercise in 2013
   (integer-coded).}
   \item{pa}{Physical activity measure in 2013
   (integer-coded).}
   \item{nrs}{Indicator of non-restorative sleep in 2013
-  (1 = presence, 0 = absence).}
+  (1 = presence; 0 = absence).}
 }
 }
 \source{
@@ -41,7 +42,11 @@ Japan. Within this package, the dataset is provided for methodological
 illustration of binary regression models rather than for substantive
 epidemiological inference.
 
-All variables are stored as integer codes. Missing values are
-represented as \code{NA}.
+Missing values are represented as \code{NA}, which are present in
+`ex`, `pa`, and `nrs`.
+}
+\examples{
+data(nrs)
+summary(nrs)
 }
 \keyword{datasets}
