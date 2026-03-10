@@ -1,0 +1,98 @@
+mean---
+title: "Demonstrating the Central Limit Theorem"
+author: "Companion Package for Biostatistical Analysis of Proportions and Rates"
+date: "`r Sys.Date()`"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Central Limit Theorem Demonstration}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+# Introduction
+
+In this vignette, we demonstrate the Central Limit Theorem (CLT)
+using the `cltdemo()` function. The CLT states that, regardless
+of the original population distribution, the distribution of the
+sample mean approaches a normal distribution as the sample size
+increases.
+
+Here, we use the Gamma distribution with varying skewness, which
+is controlled by the `shape` parameter:
+
+- **Shape = 0.5**: Highly skewed distribution
+- **Shape = 1**: Exponential distribution (moderately skewed)
+- **Shape = 2**: Less skewed distribution
+
+We explore the behavior of the sample mean for different sample
+sizes (`n = 5, 10, 20, 40`) to illustrate the convergence towards
+the normal distribution.
+
+# Load Required Packages
+
+```{r setup, include = FALSE}
+set.seed(123)
+library("ibist")
+```
+
+# Gamma Distribution with Shape = 0.5
+
+The Gamma distribution with `shape = 0.5` is highly skewed. We
+expect to see the sample mean distribution becoming more normal
+as the sample size increases.
+
+```{r gamma-shape-0.5}
+demo_clt(rgamma, n = c(5, 10, 20, 40), nrep = 10000,
+         shape = 0.5, rate = 1, pmean = 0.5, psd = sqrt(0.5))
+```
+
+# Gamma Distribution with Shape = 1
+
+The Gamma distribution with `shape = 1` is equivalent to the
+Exponential distribution. This example has moderate skewness,
+and we observe the effect of increasing the sample size.
+
+```{r gamma-shape-1}
+demo_clt(rgamma, n = c(5, 10, 20, 40), nrep = 10000,
+         shape = 1, rate = 1, pmean = 1, psd = sqrt(1))
+```
+
+# Gamma Distribution with Shape = 2
+
+The Gamma distribution with `shape = 2` has less skewness. Here,
+the sample mean distribution converges more quickly to a normal
+distribution even for smaller sample sizes.
+
+```{r gamma-shape-2}
+demo_clt(rgamma, n = c(5, 10, 20, 40), nrep = 10000,
+         shape = 2, rate = 1, pmean = 2, psd = sqrt(2))
+```
+
+# A General Distribution Constructed from a Mixture
+
+When the population `mean` and `sd` are unspecified, the will be
+approximated by a large sample (10,000) and then used in
+standardization. For instance, consider sampling from the following
+mixture distribution.
+
+```{r mixture}
+mymix_rng <- function(n, rate = 0.5) {
+    ifelse(runif(n) < rate,
+           rgamma(n, shape = 0.5), rgamma(n, shape = 4))
+}
+
+demo_clt(mymix_rng, n = c(5, 10, 20, 40))
+
+```
+
+# Conclusion
+
+The plots above demonstrate the Central Limit Theorem in action.
+As the sample size increases, the distribution of the sample mean
+approaches a normal distribution, even for highly skewed
+underlying distributions like the Gamma distribution with
+`shape = 0.5`.
+
+This vignette illustrates the robustness of the CLT and its
+importance in statistical analysis, especially when dealing with
+non-normal data in biostatistical contexts.
