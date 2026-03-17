@@ -35,6 +35,9 @@
 #' the sum of tail probabilities. Otherwise, a one-sided approximation
 #' is used.
 #'
+#' The code is adapted from stats::power.power.test() by allowing different
+#' group sizes and continuity correction.
+#'
 #' @return
 #' An object of class \code{"power.htest"} with components:
 #' \item{n}{Sample size in the first group.}
@@ -63,6 +66,7 @@ power.p2s.test <- function(n = NULL, p1 = NULL, p2 = NULL,
                            sig.level = 0.05, power = NULL,
                            group.rate = 1,
                            alternative = c("two.sided", "one.sided"),
+                           cc = FALSE,
                            strict = FALSE, 
                            tol = .Machine$double.eps^0.25) {
     if (sum(sapply(list(n, p1, p2, power, sig.level), is.null)) != 1) 
@@ -73,28 +77,29 @@ power.p2s.test <- function(n = NULL, p1 = NULL, p2 = NULL,
     alternative <- match.arg(alternative)
     tside <- switch(alternative, one.sided = 1, two.sided = 2)
     p.body <- if (strict && tside == 2) quote({
-        n1 <- n; n2 <- n * grate
+        n1 <- n; n2 <- n * group.rate
         qu <- qnorm(sig.level/tside, lower.tail = FALSE)
         d <- abs(p1 - p2)
+        delta  <- if (cc) 0.5 * (1 / n1 + 1 / n2) else 0
         q1 <- 1 - p1; q2 <- 1 - p2
         pbar <- (n1 * p1 + n2 * p2) / (n1 + n2)
         qbar <- 1 - pbar
-        v1 <- p1 * q1; v2 <- p2 * q2 
         se.num <- sqrt(pbar * qbar * (1 / n1 + 1 / n2))
-        se.den <- sqrt(v1 / n1 + v2 / n2)
-        pnorm( (d - qu * se.num) / se.den ) +
-            pnorm((d + qu * se.num) / se.den, lower.tail=FALSE) 
+        se.den <- sqrt(p1 * q1 / n1 + p2 * q2 / n2)
+        pnorm( (d - qu * se.num - delta) / se.den ) +
+            pnorm((d + qu * se.num + delta) / se.den, lower.tail=FALSE) 
     }) else quote({
-        n1 <- n; n2 <- n * grate
+        n1 <- n; n2 <- n * group.rate
         qu <- qnorm(sig.level/tside, lower.tail = FALSE)
         d <- abs(p1 - p2)
+        cc_term <- if (cc) 0.5 * (1 / n1 + 1 / n2) else 0
+        d <- max(0, d - cc_term)
         q1 <- 1 - p1; q2 <- 1 - p2
         pbar <- (n1 * p1 + n2 * p2) / (n1 + n2)
         qbar <- 1 - pbar
-        v1 <- p1 * q1; v2 <- p2 * q2 
         se.num <- sqrt(pbar * qbar * (1 / n1 + 1 / n2))
-        se.den <- sqrt(v1 / n1 + v2 / n2)
-        pnorm( (d - qu * se.num) / se.den )
+        se.den <- sqrt(p1 * q1 / n1 + p2 * q2 / n2)
+        pnorm( (d - qu * se.num - delta) / se.den )
     })
     if (is.null(power)) 
         power <- eval(p.body)
@@ -120,8 +125,13 @@ power.p2s.test <- function(n = NULL, p1 = NULL, p2 = NULL,
             warning("No significance level [0, 1] can be found to achieve the desired power")
     }
     else stop("internal error", domain = NA)
+    method <-  if (cc)
+                   "Two-sample comparison of proportions power calculation (with continuity correction)"
+               else
+                   "Two-sample comparison of proportions power calculation"
     structure(list(n = n, p1 = p1, p2 = p2, sig.level = sig.level, 
-        power = power, alternative = alternative, note = "n is number in the 1st group", 
-        method = "Two-sample comparison of proportions power calculation"), 
-        class = "power.htest")
+                   power = power, alternative = alternative,
+                   note = "n is number in the 1st group", 
+                   method = method),
+              class = "power.htest")
 }
