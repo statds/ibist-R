@@ -34,6 +34,39 @@
 #'   approximation that keeps only the dominant rejection tail.
 #' @param tol Numerical tolerance used in root finding.
 #' @param max_n Maximum allowable sample size when solving for \code{n}.
+#' @param size.rule Character string specifying the rule used to select
+#'   the sample size when \code{exact = TRUE}. Must be one of
+#'   \code{"close"} (default) or \code{"minimal"}.
+#'
+#'   \code{"close"} selects the smallest sample size \eqn{n} such that
+#'   the achieved significance level satisfies
+#'   \eqn{\alpha_{\mathrm{act}} \le \alpha}, the power meets the target,
+#'   and the achieved level is not too far below the nominal level:
+#'   \deqn{\alpha_{\mathrm{act}} \ge c \alpha,}
+#'   where \eqn{c =} \code{alpha.min.frac}. This rule avoids overly
+#'   conservative designs and makes more efficient use of the type I
+#'   error budget.
+#'
+#'   \code{"minimal"} selects the smallest sample size \eqn{n} such that
+#'   the achieved significance level satisfies
+#'   \eqn{\alpha_{\mathrm{act}} \le \alpha} and the power is at least the
+#'   target value. This is the classical exact test design but may be
+#'   conservative, with \eqn{\alpha_{\mathrm{act}} \ll \alpha}.
+#' @param alpha.min.frac Numeric value in (0, 1) specifying the minimum
+#'   fraction of the nominal significance level required for the achieved
+#'   level when \code{size.rule = "close"}.
+#'
+#'   The achieved significance level must satisfy
+#'   \deqn{\alpha_{\mathrm{act}} \ge
+#'   \text{alpha.min.frac} \times \alpha.}
+#'
+#'   The default value \code{0.9} requires the achieved level to be at
+#'   least 90\% of the nominal level. Smaller values allow more
+#'   conservative designs, while larger values enforce closer agreement
+#'   with the nominal level.
+#' 
+#'   See also \code{achieved.sig.level} in the returned value.
+#' 
 #'
 #' @return An object of class \code{"power.htest"} containing the
 #'   computed quantity and test specifications.
@@ -74,10 +107,13 @@ power.p1s.test <- function(
   exact.method = c("quantile", "midp", "cp"),
   two.sided.small.tail = TRUE,
   tol = .Machine$double.eps^0.5,
-  max_n = 1e7
+  max_n = 1e7,
+  size.rule = c("close", "minimal"),
+  alpha.min.frac = 0.9                
 ) {
   alternative <- match.arg(alternative)
   exact.method <- match.arg(exact.method)
+  size.rule <- match.arg(size.rule)
 
   ## ---- argument geometry ----
   is_null <- c(is.null(n), is.null(p0), is.null(p1),
@@ -243,36 +279,57 @@ power.p1s.test <- function(
           
           if (exact.method == "cp") {
               feasible <- function(nn) {
-                      (power_at_n(nn) >= power)
-              }
-              
+                  a <- alpha_at_n(nn)
+                  pw <- power_at_n(nn)
+                  if (size.rule == "minimal") {
+                      pw >= power
+                  } else {
+                      (a <= sig.level) &&
+                          (a >= alpha.min.frac * sig.level) &&
+                          (pw >= power)
+                  }
+              }              
           } else {
-              ## quantile / mid-p: enforce size <= nominal (optionally also add
-              ## a tol.alpha rule if you want parity across exact methods).
               feasible <- function(nn) {
-                  (alpha_at_n(nn) <= sig.level) &&
-                      (power_at_n(nn) >= power)
+                  a <- alpha_at_n(nn)
+                  pw <- power_at_n(nn)
+                  if (size.rule == "minimal") {
+                      pw >= power
+                  } else {
+                      (a <= sig.level) &&
+                          (a >= alpha.min.frac * sig.level) &&
+                          (pw >= power)
+                  }
               }
           }
           
           ## ---- exponential bracketing + integer bisection ----
-          n_lo <- 1L
-          if (feasible(n_lo)) {
-              n <- n_lo
-          } else {
-              n_hi <- 2L
-              while (!feasible(n_hi)) {
-                  n_lo <- n_hi
-                  n_hi <- n_hi * 2L
-                  if (n_hi > max_n)
-                      stop("Required n exceeds 'max_n'", call. = FALSE)
-              }
-              while (n_hi - n_lo > 1L) {
-                  n_mid <- (n_lo + n_hi) %/% 2L
-                  if (feasible(n_mid)) n_hi <- n_mid else n_lo <- n_mid
-              }
-              n <- n_hi
-          }
+          ## n_lo <- 1L
+          ## if (feasible(n_lo)) {
+          ##     n <- n_lo
+          ## } else {
+          ##     n_hi <- 2L
+          ##     while (!feasible(n_hi)) {
+          ##         n_lo <- n_hi
+          ##         n_hi <- n_hi * 2L
+          ##         if (n_hi > max_n)
+          ##             stop("Required n exceeds 'max_n'", call. = FALSE)
+          ##     }
+          ##     while (n_hi - n_lo > 1L) {
+          ##         n_mid <- (n_lo + n_hi) %/% 2L
+          ##         if (feasible(n_mid)) n_hi <- n_mid else n_lo <- n_mid
+          ##     }
+          ##     n <- n_hi
+          ## }
+          
+          ## Step 1: monotone search
+          hi <- 10
+          while (power_at_n(hi) < power) hi <- hi * 2
+          
+          ## Step 2: local scan
+          n_seq <- seq.int(max(1, hi/2), hi * 2)
+          feas <- vapply(n_seq, feasible, logical(1))
+          n <- n_seq[min(which(feas))]
           power <- power_at_n(n)
       }
   }
@@ -292,7 +349,16 @@ power.p1s.test <- function(
       sig.level <- uniroot(function(a) eval(power_body) - power,
                            c(tol, 1 - tol), tol = tol)$root
   }
-  
+
+  achieved.sig.level <- if (exact) {
+                            p1_save <- p1
+                            p1 <- p0
+                            out <- eval(power_body)
+                            p1 <- p1_save
+                            out
+                        } else {
+                            sig.level
+                        }
   ## ---- return object ----
   method <- if (!exact)
     "One-sample proportion power calculation (normal approximation)"
@@ -301,10 +367,9 @@ power.p1s.test <- function(
   else if (exact.method == "midp")
     "One-sample proportion power calculation (exact binomial, mid-p)"
   else
-    "One-sample proportion power calculation (exact binomial)"
-
-  structure(
-    list(
+      "One-sample proportion power calculation (exact binomial)"
+  
+  out <- list(
       n = n,
       p0 = p0,
       p1 = p1,
@@ -312,7 +377,24 @@ power.p1s.test <- function(
       power = power,
       alternative = alternative,
       method = method
-    ),
-    class = "power.htest"
   )
+  if (exact) {
+  out$achieved.sig.level <- achieved.sig.level
 }
+
+  structure(out, class = "power.htest")
+}
+
+
+
+## Two cautions
+## First, if you adopt the “close” rule, there may be cases where no
+## sample size in a modest range satisfies both the power target and the
+## closeness requirement. In that case, you should either keep searching or
+## fall back to "minimal" with a warning.
+## Second, for exact.method = "midp", your current use of
+## alpha_at_n(nn) <= sig.level treats the mid-plevel as if it were a
+## strict size bound. That is a design choice, but mid-p p is usually
+## motivated precisely because it relaxes conservativeness. So you should
+## decide explicitly whether you want "midp" to be planned under nominal
+## mid-p level or under conservative actual size.

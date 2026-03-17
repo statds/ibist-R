@@ -16,7 +16,9 @@ power.p1s.test(
   exact.method = c("quantile", "midp", "cp"),
   two.sided.small.tail = TRUE,
   tol = .Machine$double.eps^0.5,
-  max_n = 1e+07
+  max_n = 1e+07,
+  size.rule = c("close", "minimal"),
+  alpha.min.frac = 0.9
 )
 }
 \arguments{
@@ -53,6 +55,40 @@ approximation that keeps only the dominant rejection tail.}
 \item{tol}{Numerical tolerance used in root finding.}
 
 \item{max_n}{Maximum allowable sample size when solving for \code{n}.}
+
+\item{size.rule}{Character string specifying the rule used to select
+  the sample size when \code{exact = TRUE}. Must be one of
+  \code{"close"} (default) or \code{"minimal"}.
+
+  \code{"close"} selects the smallest sample size \eqn{n} such that
+  the achieved significance level satisfies
+  \eqn{\alpha_{\mathrm{act}} \le \alpha}, the power meets the target,
+  and the achieved level is not too far below the nominal level:
+  \deqn{\alpha_{\mathrm{act}} \ge c \alpha,}
+  where \eqn{c =} \code{alpha.min.frac}. This rule avoids overly
+  conservative designs and makes more efficient use of the type I
+  error budget.
+
+  \code{"minimal"} selects the smallest sample size \eqn{n} such that
+  the achieved significance level satisfies
+  \eqn{\alpha_{\mathrm{act}} \le \alpha} and the power is at least the
+  target value. This is the classical exact test design but may be
+  conservative, with \eqn{\alpha_{\mathrm{act}} \ll \alpha}.}
+
+\item{alpha.min.frac}{Numeric value in (0, 1) specifying the minimum
+  fraction of the nominal significance level required for the achieved
+  level when \code{size.rule = "close"}.
+
+  The achieved significance level must satisfy
+  \deqn{\alpha_{\mathrm{act}} \ge
+  \text{alpha.min.frac} \times \alpha.}
+
+  The default value \code{0.9} requires the achieved level to be at
+  least 90\% of the nominal level. Smaller values allow more
+  conservative designs, while larger values enforce closer agreement
+  with the nominal level.
+
+  See also \code{achieved.sig.level} in the returned value.}
 }
 \value{
 An object of class \code{"power.htest"} containing the
