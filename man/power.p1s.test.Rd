@@ -14,7 +14,7 @@ power.p1s.test(
   cc = FALSE,
   exact = FALSE,
   exact.method = c("quantile", "midp", "cp"),
-  two.sided.small.tail = TRUE,
+  strict = TRUE,
   tol = .Machine$double.eps^0.5,
   max_n = 1e+07,
   size.rule = c("close", "minimal"),
@@ -47,10 +47,9 @@ power and sample-size inversion; \code{"midp"} applies the mid-p
 adjustment; \code{"cp"} inverts Clopper--Pearson acceptance regions
 to guarantee size not exceeding \code{sig.level}.}
 
-\item{two.sided.small.tail}{Logical; for two-sided tests under the
-normal approximation, include the smaller tail in the power
-calculation. Setting FALSE reproduces the common textbook
-approximation that keeps only the dominant rejection tail.}
+\item{strict}{Logical; if \code{TRUE} and \code{alternative = "two.sided"},
+computes power accounting for both tails explicitly. Otherwise uses
+the standard one-sided approximation.}
 
 \item{tol}{Numerical tolerance used in root finding.}
 

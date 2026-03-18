@@ -28,10 +28,9 @@
 #'   power and sample-size inversion; \code{"midp"} applies the mid-p
 #'   adjustment; \code{"cp"} inverts Clopper--Pearson acceptance regions
 #'   to guarantee size not exceeding \code{sig.level}.
-#' @param two.sided.small.tail Logical; for two-sided tests under the
-#'   normal approximation, include the smaller tail in the power
-#'   calculation. Setting FALSE reproduces the common textbook
-#'   approximation that keeps only the dominant rejection tail.
+#' @param strict Logical; if \code{TRUE} and \code{alternative = "two.sided"},
+#'   computes power accounting for both tails explicitly. Otherwise uses
+#'   the standard one-sided approximation.
 #' @param tol Numerical tolerance used in root finding.
 #' @param max_n Maximum allowable sample size when solving for \code{n}.
 #' @param size.rule Character string specifying the rule used to select
@@ -105,7 +104,7 @@ power.p1s.test <- function(
   cc = FALSE,
   exact = FALSE,
   exact.method = c("quantile", "midp", "cp"),
-  two.sided.small.tail = TRUE,
+  strict = TRUE,
   tol = .Machine$double.eps^0.5,
   max_n = 1e7,
   size.rule = c("close", "minimal"),
@@ -189,7 +188,7 @@ power.p1s.test <- function(
       z <- qnorm(1 - sig.level / 2)
       lower_tail <- pnorm((p0 - z * se0 - delta - p1) / se1)
       upper_tail <- 1 - pnorm((p0 + z * se0 + delta - p1) / se1)
-      if (two.sided.small.tail) {
+      if (strict) {
         lower_tail + upper_tail
       } else {
         dominant_upper <- p1 >= p0
