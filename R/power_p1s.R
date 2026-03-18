@@ -377,9 +377,11 @@ power.p1s.test <- function(
       alternative = alternative,
       method = method
   )
-  if (exact) {
-  out$achieved.sig.level <- achieved.sig.level
-}
+  
+  if (exact)
+      out <- append(out,
+                    list(achieved.sig.level = achieved.sig.level),
+                    after = match("sig.level", names(out)))
 
   structure(out, class = "power.htest")
 }
