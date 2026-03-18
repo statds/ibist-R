@@ -92,8 +92,7 @@ power.p2s.test <- function(n = NULL, p1 = NULL, p2 = NULL,
         n1 <- n; n2 <- n * group.rate
         qu <- qnorm(sig.level/tside, lower.tail = FALSE)
         d <- abs(p1 - p2)
-        cc_term <- if (cc) 0.5 * (1 / n1 + 1 / n2) else 0
-        d <- max(0, d - cc_term)
+        delta  <- if (cc) 0.5 * (1 / n1 + 1 / n2) else 0
         q1 <- 1 - p1; q2 <- 1 - p2
         pbar <- (n1 * p1 + n2 * p2) / (n1 + n2)
         qbar <- 1 - pbar
