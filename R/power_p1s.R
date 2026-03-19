@@ -20,7 +20,7 @@
 #' @param alternative Character string specifying the alternative
 #'   hypothesis; one of \code{"two.sided"}, \code{"less"}, or
 #'   \code{"greater"}.
-#' @param cc Logical; if \code{TRUE}, apply continuity correction in the
+#' @param correct Logical; if \code{TRUE}, apply continuity correction in the
 #'   normal approximation.
 #' @param exact Logical; if \code{TRUE}, use an exact binomial method.
 #' @param exact.method Method used for exact binomial power calculation.
@@ -101,7 +101,7 @@ power.p1s.test <- function(
   power = NULL,
   sig.level = 0.05,
   alternative = c("two.sided", "less", "greater"),
-  cc = FALSE,
+  correct = FALSE,
   exact = FALSE,
   exact.method = c("quantile", "midp", "cp"),
   strict = TRUE,
@@ -176,7 +176,7 @@ power.p1s.test <- function(
   approx_power_body <- quote({
     se0 <- sqrt(p0 * (1 - p0) / n)
     se1 <- sqrt(p1 * (1 - p1) / n)
-    delta <- if (cc) 0.5 / n else 0
+    delta <- if (correct) 0.5 / n else 0
 
     if (alternative == "greater") {
       z <- qnorm(1 - sig.level)

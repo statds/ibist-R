@@ -24,8 +24,8 @@
 #' hypothesis is \eqn{H_0:\lambda=\lambda_0}, where \eqn{\lambda_0=r}. Let
 #' \eqn{\mu_0=\lambda_0 T}. The normal approximation gives
 #' \deqn{Z = \frac{(x - c) - \mu_0}{\sqrt{\mu_0}} \approx N(0,1),}
-#' where \eqn{c} is 0 if \code{cc=FALSE} and is a continuity correction on
-#' the count scale if \code{cc=TRUE}. Two-sided p-values use
+#' where \eqn{c} is 0 if \code{correct = FALSE} and is a continuity correction on
+#' the count scale if \code{correct = TRUE}. Two-sided p-values use
 #' \eqn{2\{1-\Phi(|Z|)\}}.
 #'
 #' #' Two-sample test:
@@ -88,11 +88,11 @@
 #' @examples
 #' ## One-sample test: compare observed rate to a reference unit rate
 #' rate.test(x = 411, T = 25800, r = 0.0119)
-#' rate.test(x = 411, T = 25800, r = 0.0119, cc = FALSE)
+#' rate.test(x = 411, T = 25800, r = 0.0119, correct = FALSE)
 #'
 #' ## Two-sample test: compare two Poisson rates
 #' rate.test(x = c(12, 5), T = c(100, 80))
-#' rate.test(x = c(12, 5), T = c(100, 80), cc = FALSE)
+#' rate.test(x = c(12, 5), T = c(100, 80), correct = FALSE)
 #'
 #' ## One-sided alternative
 #' rate.test(x = 411, T = 25800, r = 0.0119, alternative = "greater")

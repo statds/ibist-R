@@ -19,6 +19,8 @@
 #'   groups, defined as \eqn{n_2 / n_1}. Defaults to 1 (equal group sizes).
 #' @param alternative Character string specifying the alternative
 #'   hypothesis, either \code{"two.sided"} or \code{"one.sided"}.
+#' @param correct Logical; if \code{TRUE}, apply continuity correction in the
+#'   normal approximation.
 #' @param strict Logical; if \code{TRUE} and \code{alternative = "two.sided"},
 #'   computes power accounting for both tails explicitly. Otherwise uses
 #'   the standard one-sided approximation.
@@ -66,7 +68,7 @@ power.p2s.test <- function(n = NULL, p1 = NULL, p2 = NULL,
                            sig.level = 0.05, power = NULL,
                            group.rate = 1,
                            alternative = c("two.sided", "one.sided"),
-                           cc = FALSE,
+                           correct = TRUE,
                            strict = FALSE, 
                            tol = .Machine$double.eps^0.25) {
     if (sum(sapply(list(n, p1, p2, power, sig.level), is.null)) != 1) 
@@ -80,7 +82,7 @@ power.p2s.test <- function(n = NULL, p1 = NULL, p2 = NULL,
         n1 <- n; n2 <- n * group.rate
         qu <- qnorm(sig.level/tside, lower.tail = FALSE)
         d <- abs(p1 - p2)
-        delta  <- if (cc) 0.5 * (1 / n1 + 1 / n2) else 0
+        delta  <- if (correct) 0.5 * (1 / n1 + 1 / n2) else 0
         q1 <- 1 - p1; q2 <- 1 - p2
         pbar <- (n1 * p1 + n2 * p2) / (n1 + n2)
         qbar <- 1 - pbar
@@ -92,7 +94,7 @@ power.p2s.test <- function(n = NULL, p1 = NULL, p2 = NULL,
         n1 <- n; n2 <- n * group.rate
         qu <- qnorm(sig.level/tside, lower.tail = FALSE)
         d <- abs(p1 - p2)
-        delta  <- if (cc) 0.5 * (1 / n1 + 1 / n2) else 0
+        delta  <- if (correct) 0.5 * (1 / n1 + 1 / n2) else 0
         q1 <- 1 - p1; q2 <- 1 - p2
         pbar <- (n1 * p1 + n2 * p2) / (n1 + n2)
         qbar <- 1 - pbar
@@ -124,7 +126,7 @@ power.p2s.test <- function(n = NULL, p1 = NULL, p2 = NULL,
             warning("No significance level [0, 1] can be found to achieve the desired power")
     }
     else stop("internal error", domain = NA)
-    method <-  if (cc)
+    method <-  if (correct)
                    "Two-sample comparison of proportions power calculation (with continuity correction)"
                else
                    "Two-sample comparison of proportions power calculation"

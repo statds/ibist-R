@@ -71,6 +71,8 @@
 #' rate.1s.ci(5, 10, method = "score")
 #' rate.1s.ci(0, 10, method = "exact")
 #'
+#' @importFrom stats qchisq
+
 #' @export
 rate.1s.ci <- function(
   x, T = 1.0,
@@ -118,7 +120,7 @@ rate.1s.ci <- function(
 
 ci_exact <- function(x, T, conf.level, ...) {
   alpha <- 1 - conf.level
-  lower <- if (x == 0) 0 else qchisq(alpha / 2, 2 * x) / (2 * T)
+  lower <- if (x == 0) 0 else stats::qchisq(alpha / 2, 2 * x) / (2 * T)
   upper <- qchisq(1 - alpha / 2, 2 * (x + 1)) / (2 * T)
   c(lower, upper)
 }

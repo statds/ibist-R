@@ -11,7 +11,7 @@ power.p1s.test(
   power = NULL,
   sig.level = 0.05,
   alternative = c("two.sided", "less", "greater"),
-  cc = FALSE,
+  correct = FALSE,
   exact = FALSE,
   exact.method = c("quantile", "midp", "cp"),
   strict = TRUE,
@@ -36,7 +36,7 @@ power.p1s.test(
 hypothesis; one of \code{"two.sided"}, \code{"less"}, or
 \code{"greater"}.}
 
-\item{cc}{Logical; if \code{TRUE}, apply continuity correction in the
+\item{correct}{Logical; if \code{TRUE}, apply continuity correction in the
 normal approximation.}
 
 \item{exact}{Logical; if \code{TRUE}, use an exact binomial method.}
