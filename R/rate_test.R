@@ -24,8 +24,8 @@
 #' hypothesis is \eqn{H_0:\lambda=\lambda_0}, where \eqn{\lambda_0=r}. Let
 #' \eqn{\mu_0=\lambda_0 T}. The normal approximation gives
 #' \deqn{Z = \frac{(x - c) - \mu_0}{\sqrt{\mu_0}} \approx N(0,1),}
-#' where \eqn{c} is 0 if \code{correct=FALSE} and is a continuity correction on
-#' the count scale if \code{correct=TRUE}. Two-sided p-values use
+#' where \eqn{c} is 0 if \code{cc=FALSE} and is a continuity correction on
+#' the count scale if \code{cc=TRUE}. Two-sided p-values use
 #' \eqn{2\{1-\Phi(|Z|)\}}.
 #'
 #' #' Two-sample test:
@@ -71,7 +71,10 @@
 #' \item{parameter}{degrees of freedom (\code{df = 1}).}
 #' \item{p.value}{the p-value.}
 #' \item{conf.int}{a confidence interval for the difference between the two
-#'   rates, \eqn{\lambda_1-\lambda_2}, for two-sample tests.}
+#'   rates, \eqn{\lambda_1-\lambda_2}, for two-sample tests, obtained by
+#'   inverting the score-type normal approximation on the count scale. This is
+#'   closer to a score (Wilson-type) interval for Poisson mean, then rescaled
+#'   to the rate.}
 #' \item{estimate}{estimated rate (one-sample) or estimated rates (two-sample).}
 #' \item{null.value}{the null rate (one-sample) or the null rate difference
 #'   \eqn{\lambda_1-\lambda_2=0} (two-sample).}
@@ -85,17 +88,17 @@
 #' @examples
 #' ## One-sample test: compare observed rate to a reference unit rate
 #' rate.test(x = 411, T = 25800, r = 0.0119)
-#' rate.test(x = 411, T = 25800, r = 0.0119, correct = FALSE)
+#' rate.test(x = 411, T = 25800, r = 0.0119, cc = FALSE)
 #'
 #' ## Two-sample test: compare two Poisson rates
 #' rate.test(x = c(12, 5), T = c(100, 80))
-#' rate.test(x = c(12, 5), T = c(100, 80), correct = FALSE)
+#' rate.test(x = c(12, 5), T = c(100, 80), cc = FALSE)
 #'
 #' ## One-sided alternative
 #' rate.test(x = 411, T = 25800, r = 0.0119, alternative = "greater")
 #'
 #' @export
-rate.test <- function(x, T, r = 1.0,
+rate.test <- function(x, T = 1.0, r = 1.0,
                       alternative = c("two.sided", "less", "greater"),
                       conf.level = 0.95,
                       correct = TRUE)
