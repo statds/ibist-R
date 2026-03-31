@@ -9,7 +9,7 @@ A data frame with 16 rows and 4 variables:
 \describe{
   \item{bwt}{Birth weight category (factor with 4 levels).}
   \item{surf}{Surfactant use (Yes/No).}
-  \item{death}{Outcome (Dead/Alive).}
+  \item{death}{Outcome (1 = death; 0 = alive).}
   \item{count}{Number of infants in each group.}
 }
 }
