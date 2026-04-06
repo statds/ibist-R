@@ -1,0 +1,26 @@
+#' HDL Cholesterol and Event Counts by Gender
+#'
+#' Aggregated data on event counts and person-years by HDL
+#' cholesterol category and gender. Suitable for Poisson rate
+#' modeling and incidence rate comparisons.
+#'
+#' @format A data frame with 24 rows and 4 variables:
+#' \describe{
+#'   \item{hdl}{HDL category (integer, 1--12)}
+#'   \item{gender}{Gender (factor: Men, Women)}
+#'   \item{cases}{Number of events}
+#'   \item{pyears}{Person-years at risk}
+#' }
+#'
+#' @details
+#' The dataset provides grouped count data for modeling rates
+#' using Poisson regression with an offset for log person-years.
+#'
+#' @examples
+#' data(mihdl)
+#' fit <- glm(cases ~ factor(hdl) + gender,
+#'            offset = log(pyears),
+#'            family = poisson,
+#'            data = mihdl)
+#' summary(fit)
+"mihdl"

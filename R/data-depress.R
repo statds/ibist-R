@@ -1,0 +1,76 @@
+#' Depression, insomnia, and stress dataset (Kalmbach et al., 2018)
+#'
+#' This dataset is derived from a longitudinal study examining the role
+#' of insomnia and cognitive intrusions in predicting future depression.
+#' It includes participants who were not depressed at baseline and who
+#' met inclusion criteria on age, missingness, and stress exposure.
+#'
+#' @format A data frame with 1730 observations and 9 variables:
+#' \describe{
+#'   \item{age}{Age in years.}
+#'   \item{gender}{Gender of the participant (coded per original survey).}
+#'   \item{stressorA}{Indicator for experiencing at least one stressor
+#'     in the past year.}
+#'   \item{depress1yr}{Depression status at 1-year follow-up.}
+#'   \item{depress2yr}{Depression status at 2-year follow-up.}
+#'   \item{depress1or2yr}{Depression at either 1 or 2 years.}
+#'   \item{IEStert}{Tertile of cognitive intrusion score based on the
+#'     Impact of Event Scale (IES).}
+#'   \item{IESgrp}{Grouped cognitive intrusion:
+#'     0 = lowest tertile, 1 = middle tertile, 2 = highest tertile.}
+#'   \item{insom}{Insomnia indicator defined as:
+#'     sleep onset latency (SOL) > 30 minutes or
+#'     wake after sleep onset (WASO) > 30 minutes.}
+#' }
+#'
+#' @details
+#' The dataset is constructed by applying the following criteria:
+#' \itemize{
+#'   \item Baseline depression score < 10.
+#'   \item Age >= 18.
+#'   \item Non-missing gender, cognitive intrusion (IES), and WASO.
+#'   \item At least one stressor in the past year.
+#'   \item Exclusion of extreme nocturnal wakefulness (> 90 minutes).
+#' }
+#'
+#' The resulting dataset (n = 1730) includes all three cognitive
+#' intrusion tertiles. In the original paper, the analytic sample was
+#' further restricted by removing observations with missing
+#' \code{IEStert}, which effectively excludes the middle tertile
+#' (coded as \code{IESgrp = 1}), yielding a smaller sample
+#' (n = 1126). This optional restriction is not applied here but can be
+#' reproduced by subsetting:
+#'
+#' \preformatted{
+#' depress_paper <- subset(depress, !is.na(IEStert))
+#' }
+#'
+#' Variable definitions follow the original study documentation
+#' provided in the supplementary spreadsheet (S1 Table).
+#'
+#' @source
+#' Kalmbach, D. A., Pillai, V., and Drake, C. L. (2018).
+#' Nocturnal insomnia symptoms and stress-induced cognitive
+#' intrusions in risk for depression: a 2-year prospective study.
+#' \emph{PLOS ONE}, 13(2), e0192088.
+#'
+#' @references
+#' Kalmbach, D. A., Pillai, V., and Drake, C. L. (2018).
+#' Nocturnal insomnia symptoms and stress-induced cognitive
+#' intrusions in risk for depression: a 2-year prospective study.
+#' \emph{PLOS ONE}, 13(2), e0192088.
+#'
+#' @examples
+#' data(depress)
+#' str(depress)
+#'
+#' # proportion developing depression within 2 years
+#' mean(depress$depress1or2yr)
+#'
+#' # insomnia prevalence
+#' mean(depress$insom)
+#'
+#' # reproduce analytic sample used in the paper
+#' depress_paper <- subset(depress, !is.na(IEStert))
+#'
+"depress"
