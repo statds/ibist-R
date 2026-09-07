@@ -22,17 +22,18 @@ prop.paired.ci(
 
 \item{conf.level}{Confidence level for the interval.}
 
-\item{method}{Method for confidence interval. One of \code{"score"},
-\code{"wald"}, \code{"waldcc"}, \code{"agresti-min"}, or
-\code{"wang"}.}
+\item{method}{Method or methods for confidence interval. One or more of
+\code{"score"}, \code{"wald"}, \code{"waldcc"}, \code{"agresti-min"},
+or \code{"wang"}.}
 
 \item{...}{Additional arguments for the selected method. For
 \code{"score"}, these include \code{tol}; for \code{"wang"}, they
 include \code{precision}, \code{grid.one}, and \code{grid.two}.}
 }
 \value{
-An object of class \code{"ci"} containing the estimate and
-  confidence limits.
+For one method, an object of class \code{"ci"} containing the
+  estimate and confidence limits. For multiple methods, a data frame with
+  one row per method.
 }
 \description{
 Computes confidence intervals for the difference of two paired proportions.

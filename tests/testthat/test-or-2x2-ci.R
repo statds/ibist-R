@@ -23,6 +23,15 @@ test_that("or.2x2.ci returns Baptista-Pike mid-p interval", {
                tolerance = 1e-4)
 })
 
+test_that("or.2x2.ci supports multiple methods", {
+  tab <- matrix(c(7, 27, 1, 33), nrow = 2, byrow = TRUE)
+  result <- or.2x2.ci(tab, method = c("wald", "bp"))
+
+  expect_s3_class(result, "data.frame")
+  expect_equal(result$method, c("wald", "baptista-pike"))
+  expect_equal(result$estimate, rep(8.555556, 2), tolerance = 1e-6)
+})
+
 test_that("or.2x2.ci validates inputs", {
   expect_error(or.2x2.ci(matrix(1:6, nrow = 2)), "2 x 2")
   expect_error(or.2x2.ci(matrix(c(1, 2, 3, -1), nrow = 2)), "non-negative")

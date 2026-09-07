@@ -6,7 +6,8 @@
 #'
 #' @param x a vector of event counts. A single value specifies a one-sample
 #'   test; a vector of length two specifies a two-sample comparison.
-#' @param T a vector of exposures corresponding to \code{x} (e.g., person-time).
+#' @param exposure a vector of exposures corresponding to \code{x}
+#'   (e.g., person-time).
 #'   Must have the same length as \code{x}.
 #' @param r a positive number specifying the null rate per unit exposure,
 #'   \eqn{\lambda_0}, for a one-sample test. Default to 1.0. Ignored for two-sample tests.
@@ -91,29 +92,34 @@
 #'
 #' @examples
 #' ## One-sample test: compare observed rate to a reference unit rate
-#' rate.test(x = 411, T = 25800, r = 0.0119)
-#' rate.test(x = 411, T = 25800, r = 0.0119, correct = FALSE)
+#' rate.test(x = 411, exposure = 25800, r = 0.0119)
+#' rate.test(x = 411, exposure = 25800, r = 0.0119, correct = FALSE)
 #'
 #' ## Two-sample test: compare two Poisson rates
-#' rate.test(x = c(12, 5), T = c(100, 80))
-#' rate.test(x = c(12, 5), T = c(100, 80), correct = FALSE)
+#' rate.test(x = c(12, 5), exposure = c(100, 80))
+#' rate.test(x = c(12, 5), exposure = c(100, 80), correct = FALSE)
 #'
 #' ## One-sided alternative
-#' rate.test(x = 411, T = 25800, r = 0.0119, alternative = "greater")
+#' rate.test(x = 411, exposure = 25800, r = 0.0119,
+#'           alternative = "greater")
 #'
 #' @export
-rate.test <- function(x, T = 1.0, r = 1.0,
+rate.test <- function(x, exposure = 1.0, r = 1.0,
                       alternative = c("two.sided", "less", "greater"),
                       conf.level = 0.95,
                       correct = TRUE)
 {
   alternative <- match.arg(alternative)
 
-  if (length(x) != length(T)) stop("'x' and 'T' must have the same length")
+  if (length(x) != length(exposure)) {
+    stop("'x' and 'exposure' must have the same length")
+  }
   if (!length(x) %in% c(1L, 2L)) stop("'x' must have length 1 or 2")
-  if (any(!is.finite(x)) || any(!is.finite(T))) stop("'x' and 'T' must be finite")
+  if (any(!is.finite(x)) || any(!is.finite(exposure))) {
+    stop("'x' and 'exposure' must be finite")
+  }
   if (any(x < 0) || any(abs(x - round(x)) > 0)) stop("'x' must be nonnegative integers")
-  if (any(T <= 0)) stop("'T' must be positive")
+  if (any(exposure <= 0)) stop("'exposure' must be positive")
   if (!is.numeric(conf.level) || length(conf.level) != 1L ||
       conf.level <= 0 || conf.level >= 1) {
     stop("'conf.level' must be a single number in (0, 1)")
@@ -125,7 +131,7 @@ rate.test <- function(x, T = 1.0, r = 1.0,
           stop("a single positive null unit rate 'r' must be specified")
       }
       
-      mu0 <- r * T
+      mu0 <- r * exposure
       
       ## CC on count scale
       cc <- 0
@@ -148,36 +154,38 @@ rate.test <- function(x, T = 1.0, r = 1.0,
       
       conf.int <- rate.1s.ci(
           x = x,
-          T = T,
+          exposure = exposure,
           conf.level = conf.level,
           method = "score",
           correct = correct
       )$conf.int
       
-      estimate <- c(rate = x / T)
+      estimate <- c(rate = x / exposure)
       null.value <- c(rate = r)
       
       ## Ingredients (shared names)
       statistic <- c(z = as.numeric(z))
       parameter <- c(df = 1)
       method <- "Normal approximation test for a Poisson rate"
-      data.name <- paste0("x = ", x, ", T = ", T)
+      data.name <- paste0("x = ", x, ", exposure = ", exposure)
       
   } else {
       
       ## --- Two-sample: H0: lambda1 = lambda2
       x1 <- x[1]; x2 <- x[2]
-      T1 <- T[1]; T2 <- T[2]
+      exposure1 <- exposure[1]; exposure2 <- exposure[2]
       
       if (x1 + x2 == 0) {
           stop("at least one event is required for the 2-sample test")
       }
 
-      ci <- rate.2s.ci(x, T, conf.level = conf.level, method = "log")
+      ci <- rate.2s.ci(
+          x, exposure, conf.level = conf.level, method = "log"
+      )
       
       ## Conditional binomial test under H0 via prop.test()
       n  <- x1 + x2
-      p0 <- T1 / (T1 + T2)
+      p0 <- exposure1 / (exposure1 + exposure2)
       
       pt <- stats::prop.test(x = x1, n = n,p = p0, alternative = alternative,
                               conf.level = conf.level, correct = correct)
@@ -199,7 +207,7 @@ rate.test <- function(x, T = 1.0, r = 1.0,
       )
       data.name <- paste0(
           "x = c(", x1, ", ", x2, "), ",
-          "T = c(", T1, ", ", T2, ")"
+        "exposure = c(", exposure1, ", ", exposure2, ")"
       )
   }
   

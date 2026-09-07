@@ -5,9 +5,9 @@
 #' known exposures.
 #'
 #' @param x Length-2 vector of non-negative integer event counts.
-#' @param T Length-2 positive numeric vector of exposures.
+#' @param exposure Length-2 positive numeric vector of exposures.
 #' @param conf.level Confidence level. Default is 0.95.
-#' @param method Method for confidence interval. One of:
+#' @param method Method or methods for confidence interval. One or more of:
 #'   \itemize{
 #'     \item \code{"log"}: Log-Wald interval
 #'     \item \code{"score"}: Transformed Wilson score interval
@@ -48,18 +48,21 @@
 #' \code{"exact"} method uses the exact Clopper-Pearson limits returned by
 #' \code{\link[stats]{binom.test}}.
 #'
-#' @return An object of class \code{"ci"} containing the estimate and
-#'   confidence limits.
+#' @return For one method, an object of class \code{"ci"} containing the
+#'   estimate and confidence limits. For multiple methods, a data frame with
+#'   one row per method.
 #'
 #' @examples
-#' rate.2s.ci(c(151, 55), T = c(57518.1, 74573.5))
-#' rate.2s.ci(c(151, 55), T = c(57518.1, 74573.5), method = "score")
-#' rate.2s.ci(c(9, 12), T = c(1817.6, 7496.3), method = "exact")
+#' rate.2s.ci(c(151, 55), exposure = c(57518.1, 74573.5))
+#' rate.2s.ci(c(151, 55), exposure = c(57518.1, 74573.5), method = "score")
+#' rate.2s.ci(c(151, 55), exposure = c(57518.1, 74573.5),
+#'            method = c("log", "score"))
+#' rate.2s.ci(c(9, 12), exposure = c(1817.6, 7496.3), method = "exact")
 #'
 #' @export
 rate.2s.ci <- function(
   x,
-  T = c(1.0, 1.0),
+  exposure = c(1.0, 1.0),
   conf.level = 0.95,
   method = c("log", "score", "exact"),
   ...
@@ -69,8 +72,9 @@ rate.2s.ci <- function(
     stop("x must be a length-2 vector of non-negative integers.")
   }
 
-  if (length(T) != 2L || any(!is.finite(T)) || any(T <= 0)) {
-    stop("T must be a length-2 vector of positive exposures.")
+  if (length(exposure) != 2L || any(!is.finite(exposure)) ||
+      any(exposure <= 0)) {
+    stop("exposure must be a length-2 vector of positive values.")
   }
 
   if (!is.numeric(conf.level) || length(conf.level) != 1L ||
@@ -82,9 +86,11 @@ rate.2s.ci <- function(
     stop("at least one event is required.")
   }
 
-  method <- match.arg(method)
-  rate1 <- x[1] / T[1]
-  rate2 <- x[2] / T[2]
+  methods <- if (missing(method)) method[1L] else {
+    match.arg(method, several.ok = TRUE)
+  }
+  rate1 <- x[1] / exposure[1]
+  rate2 <- x[2] / exposure[2]
   rate_ratio <- rate1 / rate2
 
   ci_methods <- list(
@@ -92,7 +98,17 @@ rate.2s.ci <- function(
     score = ci_rate_ratio_score,
     exact = ci_rate_ratio_exact
   )
-  ci <- ci_methods[[method]](x, T, conf.level, ...)
+  intervals <- lapply(
+    methods,
+    function(method) ci_methods[[method]](x, exposure, conf.level, ...)
+  )
+
+  if (length(methods) > 1L) {
+    return(ci_table(methods, rate_ratio, intervals, conf.level))
+  }
+
+  method <- methods[[1L]]
+  ci <- intervals[[1L]]
 
   structure(
     list(
@@ -103,35 +119,35 @@ rate.2s.ci <- function(
       method = paste(method, "CI for Poisson rate ratio"),
       data.name = paste0(
         "x = c(", x[1], ", ", x[2], "), ",
-        "T = c(", T[1], ", ", T[2], ")"
+        "exposure = c(", exposure[1], ", ", exposure[2], ")"
       )
     ),
     class = "ci"
   )
 }
 
-ci_rate_ratio_log <- function(x, T, conf.level, ...) {
+ci_rate_ratio_log <- function(x, exposure, conf.level, ...) {
   if (x[1] == 0 || x[2] == 0) {
     stop("log-Wald confidence interval for the rate ratio requires positive event counts")
   }
 
   alpha <- 1 - conf.level
   z <- qnorm(1 - alpha / 2)
-  rate_ratio <- (x[1] / T[1]) / (x[2] / T[2])
+  rate_ratio <- (x[1] / exposure[1]) / (x[2] / exposure[2])
   se_log_ratio <- sqrt(1 / x[1] + 1 / x[2])
 
   exp(log(rate_ratio) + c(-1, 1) * z * se_log_ratio)
 }
 
-ci_rate_ratio_score <- function(x, T, conf.level, ...) {
+ci_rate_ratio_score <- function(x, exposure, conf.level, ...) {
   n <- sum(x)
   pi_ci <- binom_wilson_ci(x[1], n, conf.level)
-  transform_pi_to_rate_ratio(pi_ci, T)
+  transform_pi_to_rate_ratio(pi_ci, exposure)
 }
 
-ci_rate_ratio_exact <- function(x, T, conf.level, ...) {
+ci_rate_ratio_exact <- function(x, exposure, conf.level, ...) {
   pi_ci <- stats::binom.test(x[1], sum(x), conf.level = conf.level)$conf.int
-  transform_pi_to_rate_ratio(pi_ci, T)
+  transform_pi_to_rate_ratio(pi_ci, exposure)
 }
 
 binom_wilson_ci <- function(x, n, conf.level) {
@@ -145,17 +161,17 @@ binom_wilson_ci <- function(x, n, conf.level) {
   c(max(0, center - half_width), min(1, center + half_width))
 }
 
-transform_pi_to_rate_ratio <- function(pi_ci, T) {
+transform_pi_to_rate_ratio <- function(pi_ci, exposure) {
   lower <- if (pi_ci[1] <= 0) {
     0
   } else {
-    pi_ci[1] * T[2] / ((1 - pi_ci[1]) * T[1])
+    pi_ci[1] * exposure[2] / ((1 - pi_ci[1]) * exposure[1])
   }
 
   upper <- if (pi_ci[2] >= 1) {
     Inf
   } else {
-    pi_ci[2] * T[2] / ((1 - pi_ci[2]) * T[1])
+    pi_ci[2] * exposure[2] / ((1 - pi_ci[2]) * exposure[1])
   }
 
   c(lower, upper)

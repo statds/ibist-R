@@ -11,3 +11,13 @@ print.ci <- function(x, digits = getOption("digits"), ...) {
   print(x$conf.int, digits = digits)
   invisible(x)
 }
+
+ci_table <- function(method, estimate, intervals, conf.level) {
+  data.frame(
+    method = method,
+    estimate = estimate,
+    lower = vapply(intervals, `[`, numeric(1), 1L),
+    upper = vapply(intervals, `[`, numeric(1), 2L),
+    conf.level = conf.level
+  )
+}

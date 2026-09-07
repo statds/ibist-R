@@ -6,9 +6,9 @@
 #' @param c Number of discordant pairs favorable to group 2.
 #' @param n Total number of matched pairs.
 #' @param conf.level Confidence level for the interval.
-#' @param method Method for confidence interval. One of \code{"score"},
-#'   \code{"wald"}, \code{"waldcc"}, \code{"agresti-min"}, or
-#'   \code{"wang"}.
+#' @param method Method or methods for confidence interval. One or more of
+#'   \code{"score"}, \code{"wald"}, \code{"waldcc"}, \code{"agresti-min"},
+#'   or \code{"wang"}.
 #' @param ... Additional arguments for the selected method. For
 #'   \code{"score"}, these include \code{tol}; for \code{"wang"}, they
 #'   include \code{precision}, \code{grid.one}, and \code{grid.two}.
@@ -36,8 +36,9 @@
 #' moderate because it searches over nuisance parameters and refines the
 #' confidence limits numerically.
 #'
-#' @return An object of class \code{"ci"} containing the estimate and
-#'   confidence limits.
+#' @return For one method, an object of class \code{"ci"} containing the
+#'   estimate and confidence limits. For multiple methods, a data frame with
+#'   one row per method.
 #'
 #' @examples
 #' prop.paired.ci(b = 8, c = 25, n = 180)
@@ -78,16 +79,28 @@ prop.paired.ci <- function(
     stop("'conf.level' must be a single number between 0 and 1.")
   }
 
-  method <- match.arg(method)
+  methods <- if (missing(method)) method[1L] else {
+    match.arg(method, several.ok = TRUE)
+  }
   estimate <- (b - c) / n
-  ci <- switch(
-    method,
-    score = paired_ci_score(b, c, n, conf.level, ...),
-    wald = paired_ci_wald(b, c, n, conf.level, correct = FALSE),
-    waldcc = paired_ci_wald(b, c, n, conf.level, correct = TRUE),
-    "agresti-min" = paired_ci_agresti_min(b, c, n, conf.level),
-    wang = paired_ci_wang(b, c, n, conf.level, ...)
+  intervals <- lapply(
+    methods,
+    function(method) switch(
+      method,
+      score = paired_ci_score(b, c, n, conf.level, ...),
+      wald = paired_ci_wald(b, c, n, conf.level, correct = FALSE),
+      waldcc = paired_ci_wald(b, c, n, conf.level, correct = TRUE),
+      "agresti-min" = paired_ci_agresti_min(b, c, n, conf.level),
+      wang = paired_ci_wang(b, c, n, conf.level, ...)
+    )
   )
+
+  if (length(methods) > 1L) {
+    return(ci_table(methods, estimate, intervals, conf.level))
+  }
+
+  method <- methods[[1L]]
+  ci <- intervals[[1L]]
 
   structure(
     list(

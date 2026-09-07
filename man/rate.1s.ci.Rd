@@ -6,7 +6,7 @@
 \usage{
 rate.1s.ci(
   x,
-  T = 1,
+  exposure = 1,
   conf.level = 0.95,
   method = c("exact", "score", "wh", "wald", "log"),
   correct = TRUE,
@@ -16,11 +16,11 @@ rate.1s.ci(
 \arguments{
 \item{x}{Non-negative integer. Observed number of events.}
 
-\item{T}{Positive numeric. Exposure time (or total time at risk).}
+\item{exposure}{Positive numeric. Exposure time (or total time at risk).}
 
 \item{conf.level}{Confidence level. Default is 0.95.}
 
-\item{method}{Method for confidence interval. One of:
+\item{method}{Method or methods for confidence interval. One or more of:
 \itemize{
   \item \code{"exact"}: Exact (Garwood) interval
   \item \code{"score"}: Score interval (inversion of score test)
@@ -35,8 +35,9 @@ rate.1s.ci(
 \item{...}{Reserved for future extensions.}
 }
 \value{
-An object of class \code{"ci"} containing the estimate and
-  confidence limits.
+For one method, an object of class \code{"ci"} containing the
+  estimate and confidence limits. For multiple methods, a data frame with
+  one row per method.
 }
 \description{
 Computes confidence intervals for a Poisson rate parameter
@@ -91,6 +92,7 @@ scale for methods that support it.
 \examples{
 rate.1s.ci(5, 10)
 rate.1s.ci(5, 10, method = "score")
+rate.1s.ci(5, 10, method = c("exact", "score", "log"))
 rate.1s.ci(0, 10, method = "exact")
 
 }

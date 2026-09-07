@@ -6,7 +6,7 @@
 \usage{
 rate.test(
   x,
-  T = 1,
+  exposure = 1,
   r = 1,
   alternative = c("two.sided", "less", "greater"),
   conf.level = 0.95,
@@ -17,7 +17,8 @@ rate.test(
 \item{x}{a vector of event counts. A single value specifies a one-sample
 test; a vector of length two specifies a two-sample comparison.}
 
-\item{T}{a vector of exposures corresponding to \code{x} (e.g., person-time).
+\item{exposure}{a vector of exposures corresponding to \code{x}
+(e.g., person-time).
 Must have the same length as \code{x}.}
 
 \item{r}{a positive number specifying the null rate per unit exposure,
@@ -107,15 +108,16 @@ to be positive.
 }
 \examples{
 ## One-sample test: compare observed rate to a reference unit rate
-rate.test(x = 411, T = 25800, r = 0.0119)
-rate.test(x = 411, T = 25800, r = 0.0119, correct = FALSE)
+rate.test(x = 411, exposure = 25800, r = 0.0119)
+rate.test(x = 411, exposure = 25800, r = 0.0119, correct = FALSE)
 
 ## Two-sample test: compare two Poisson rates
-rate.test(x = c(12, 5), T = c(100, 80))
-rate.test(x = c(12, 5), T = c(100, 80), correct = FALSE)
+rate.test(x = c(12, 5), exposure = c(100, 80))
+rate.test(x = c(12, 5), exposure = c(100, 80), correct = FALSE)
 
 ## One-sided alternative
-rate.test(x = 411, T = 25800, r = 0.0119, alternative = "greater")
+rate.test(x = 411, exposure = 25800, r = 0.0119,
+          alternative = "greater")
 
 }
 \seealso{

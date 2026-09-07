@@ -6,7 +6,7 @@
 \usage{
 rate.2s.ci(
   x,
-  T = c(1, 1),
+  exposure = c(1, 1),
   conf.level = 0.95,
   method = c("log", "score", "exact"),
   ...
@@ -15,11 +15,11 @@ rate.2s.ci(
 \arguments{
 \item{x}{Length-2 vector of non-negative integer event counts.}
 
-\item{T}{Length-2 positive numeric vector of exposures.}
+\item{exposure}{Length-2 positive numeric vector of exposures.}
 
 \item{conf.level}{Confidence level. Default is 0.95.}
 
-\item{method}{Method for confidence interval. One of:
+\item{method}{Method or methods for confidence interval. One or more of:
 \itemize{
   \item \code{"log"}: Log-Wald interval
   \item \code{"score"}: Transformed Wilson score interval
@@ -29,8 +29,9 @@ rate.2s.ci(
 \item{...}{Reserved for future extensions.}
 }
 \value{
-An object of class \code{"ci"} containing the estimate and
-  confidence limits.
+For one method, an object of class \code{"ci"} containing the
+  estimate and confidence limits. For multiple methods, a data frame with
+  one row per method.
 }
 \description{
 Computes confidence intervals for the rate ratio
@@ -71,8 +72,10 @@ The \code{"score"} method uses Wilson score limits for \eqn{\pi}; the
 \code{\link[stats]{binom.test}}.
 }
 \examples{
-rate.2s.ci(c(151, 55), T = c(57518.1, 74573.5))
-rate.2s.ci(c(151, 55), T = c(57518.1, 74573.5), method = "score")
-rate.2s.ci(c(9, 12), T = c(1817.6, 7496.3), method = "exact")
+rate.2s.ci(c(151, 55), exposure = c(57518.1, 74573.5))
+rate.2s.ci(c(151, 55), exposure = c(57518.1, 74573.5), method = "score")
+rate.2s.ci(c(151, 55), exposure = c(57518.1, 74573.5),
+           method = c("log", "score"))
+rate.2s.ci(c(9, 12), exposure = c(1817.6, 7496.3), method = "exact")
 
 }

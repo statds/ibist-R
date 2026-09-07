@@ -42,3 +42,13 @@ test_that("prop.paired.ci supports Wang's exact interval", {
                tolerance = 1e-4)
   expect_match(result$method, "Wang exact")
 })
+
+test_that("prop.paired.ci supports multiple methods", {
+  result <- prop.paired.ci(
+    b = 8, c = 25, n = 180, method = c("score", "wald")
+  )
+
+  expect_s3_class(result, "data.frame")
+  expect_equal(result$method, c("score", "wald"))
+  expect_equal(result$estimate, rep(-17 / 180, 2))
+})

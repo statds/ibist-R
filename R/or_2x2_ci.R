@@ -4,8 +4,9 @@
 #'
 #' @param x A 2 x 2 table of non-negative integer counts.
 #' @param conf.level Confidence level for the interval.
-#' @param method Method for confidence interval. One of:
-#'   \code{"wald"}, \code{"adjusted"}, \code{"baptista-pike"}, or \code{"bp"}.
+#' @param method Method or methods for confidence interval. One or more of:
+#'   \code{"wald"}, \code{"adjusted"}, \code{"baptista-pike"}, or
+#'   \code{"bp"}.
 #' @param ... Reserved for future extensions.
 #'
 #' @details
@@ -19,8 +20,9 @@
 #' and \code{"bp"} methods invert the conditional mid-p test based on the
 #' noncentral hypergeometric distribution.
 #'
-#' @return An object of class \code{"ci"} containing the estimate and
-#'   confidence limits.
+#' @return For one method, an object of class \code{"ci"} containing the
+#'   estimate and confidence limits. For multiple methods, a data frame with
+#'   one row per method.
 #'
 #' @references
 #' Baptista, J., and Pike, M. C. (1977). Algorithm AS 115: Exact two-sided
@@ -51,9 +53,10 @@ or.2x2.ci <- function(
     stop("'conf.level' must be a single number between 0 and 1.")
   }
 
-  method <- match.arg(method)
-  if (method == "bp")
-    method <- "baptista-pike"
+  methods <- if (missing(method)) method[1L] else {
+    match.arg(method, several.ok = TRUE)
+  }
+  methods[methods == "bp"] <- "baptista-pike"
 
   ci_methods <- list(
     wald = or_ci_wald,
@@ -62,7 +65,17 @@ or.2x2.ci <- function(
   )
 
   estimate <- odds_ratio_estimate(tab)
-  ci <- ci_methods[[method]](tab, conf.level, ...)
+  intervals <- lapply(
+    methods,
+    function(method) ci_methods[[method]](tab, conf.level, ...)
+  )
+
+  if (length(methods) > 1L) {
+    return(ci_table(methods, estimate, intervals, conf.level))
+  }
+
+  method <- methods[[1L]]
+  ci <- intervals[[1L]]
 
   structure(
     list(

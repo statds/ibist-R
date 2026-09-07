@@ -16,14 +16,16 @@ or.2x2.ci(
 
 \item{conf.level}{Confidence level for the interval.}
 
-\item{method}{Method for confidence interval. One of:
-\code{"wald"}, \code{"adjusted"}, \code{"baptista-pike"}, or \code{"bp"}.}
+\item{method}{Method or methods for confidence interval. One or more of:
+\code{"wald"}, \code{"adjusted"}, \code{"baptista-pike"}, or
+\code{"bp"}.}
 
 \item{...}{Reserved for future extensions.}
 }
 \value{
-An object of class \code{"ci"} containing the estimate and
-  confidence limits.
+For one method, an object of class \code{"ci"} containing the
+  estimate and confidence limits. For multiple methods, a data frame with
+  one row per method.
 }
 \description{
 Computes confidence intervals for the odds ratio in a 2 x 2 table.

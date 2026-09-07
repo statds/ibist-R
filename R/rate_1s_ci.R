@@ -4,9 +4,9 @@
 #' \eqn{\lambda = x / T} using several methods.
 #'
 #' @param x Non-negative integer. Observed number of events.
-#' @param T Positive numeric. Exposure time (or total time at risk).
+#' @param exposure Positive numeric. Exposure time (or total time at risk).
 #' @param conf.level Confidence level. Default is 0.95.
-#' @param method Method for confidence interval. One of:
+#' @param method Method or methods for confidence interval. One or more of:
 #'   \itemize{
 #'     \item \code{"exact"}: Exact (Garwood) interval
 #'     \item \code{"score"}: Score interval (inversion of score test)
@@ -64,19 +64,21 @@
 #' When \code{correct = TRUE}, continuity correction is applied on the count
 #' scale for methods that support it.
 #' 
-#' @return An object of class \code{"ci"} containing the estimate and
-#'   confidence limits.
+#' @return For one method, an object of class \code{"ci"} containing the
+#'   estimate and confidence limits. For multiple methods, a data frame with
+#'   one row per method.
 #'
 #' @examples
 #' rate.1s.ci(5, 10)
 #' rate.1s.ci(5, 10, method = "score")
+#' rate.1s.ci(5, 10, method = c("exact", "score", "log"))
 #' rate.1s.ci(0, 10, method = "exact")
 #'
 #' @importFrom stats qchisq
 
 #' @export
 rate.1s.ci <- function(
-  x, T = 1.0,
+  x, exposure = 1.0,
   conf.level = 0.95,
   method = c("exact", "score", "wh", "wald", "log"),
   correct = TRUE,
@@ -87,15 +89,17 @@ rate.1s.ci <- function(
     stop("x must be a non-negative integer.")
   }
 
-  if (length(T) != 1 || T <= 0) {
-    stop("T must be positive.")
+  if (length(exposure) != 1 || exposure <= 0) {
+    stop("exposure must be positive.")
   }
 
   if (conf.level <= 0 || conf.level >= 1) {
     stop("conf.level must be in (0, 1).")
   }
 
-  method <- match.arg(method)
+  methods <- if (missing(method)) method[1L] else {
+    match.arg(method, several.ok = TRUE)
+  }
 
   ci_methods <- list(
     exact = ci_exact,
@@ -105,28 +109,41 @@ rate.1s.ci <- function(
     wh    = ci_wh
   )
 
-  ci <- ci_methods[[method]](x, T, conf.level, correct, ...)
+  intervals <- lapply(
+    methods,
+    function(method) {
+      ci_methods[[method]](x, exposure, conf.level, correct, ...)
+    }
+  )
+
+  if (length(methods) > 1L) {
+    return(ci_table(methods, x / exposure, intervals, conf.level))
+  }
+
+  method <- methods[[1L]]
+  ci <- intervals[[1L]]
 
   structure(
     list(
       conf.int = ci,
-      estimate = c(rate = x / T),
+      estimate = c(rate = x / exposure),
       conf.level = conf.level,
       method = paste(method, "CI for Poisson rate"),
-      data.name = paste0("x = ", x, ", T = ", T)
+      data.name = paste0("x = ", x, ", exposure = ", exposure)
     ),
     class = "ci"
   )
 }
 
-ci_exact <- function(x, T, conf.level, ...) {
+ci_exact <- function(x, exposure, conf.level, ...) {
   alpha <- 1 - conf.level
-  lower <- if (x == 0) 0 else stats::qchisq(alpha / 2, 2 * x) / (2 * T)
-  upper <- qchisq(1 - alpha / 2, 2 * (x + 1)) / (2 * T)
+  lower <- if (x == 0) 0 else stats::qchisq(alpha / 2, 2 * x) /
+    (2 * exposure)
+  upper <- qchisq(1 - alpha / 2, 2 * (x + 1)) / (2 * exposure)
   c(lower, upper)
 }
 
-ci_score <- function(x, T, conf.level, correct = TRUE, ...) {
+ci_score <- function(x, exposure, conf.level, correct = TRUE, ...) {
   alpha <- 1 - conf.level
   z <- qnorm(1 - alpha / 2)
 
@@ -139,15 +156,15 @@ ci_score <- function(x, T, conf.level, correct = TRUE, ...) {
   }
 
   lower <- (2 * x_lower + z^2 -
-            z * sqrt(z^2 + 4 * x_lower)) / (2 * T)
+            z * sqrt(z^2 + 4 * x_lower)) / (2 * exposure)
 
   upper <- (2 * x_upper + z^2 +
-            z * sqrt(z^2 + 4 * x_upper)) / (2 * T)
+            z * sqrt(z^2 + 4 * x_upper)) / (2 * exposure)
 
   c(lower, upper)
 }
 
-ci_wh <- function(x, T, conf.level, correct = TRUE, ...) {
+ci_wh <- function(x, exposure, conf.level, correct = TRUE, ...) {
   alpha <- 1 - conf.level
   zL <- qnorm(alpha / 2)
   zU <- qnorm(1 - alpha / 2)
@@ -167,15 +184,15 @@ ci_wh <- function(x, T, conf.level, correct = TRUE, ...) {
 
   upper <- upper_x * (1 - 1 / (9 * upper_x) + zU / (3 * sqrt(upper_x)))^3
 
-  c(lower, upper) / T
+  c(lower, upper) / exposure
 }
 
-ci_wald <- function(x, T, conf.level, correct = TRUE, ...) {
+ci_wald <- function(x, exposure, conf.level, correct = TRUE, ...) {
   alpha <- 1 - conf.level
   z <- qnorm(1 - alpha / 2)
 
   if (x == 0 && !correct) {
-    return(c(0, -log(alpha / 2) / T))
+    return(c(0, -log(alpha / 2) / exposure))
   }
 
   # continuity correction offset
@@ -184,19 +201,19 @@ ci_wald <- function(x, T, conf.level, correct = TRUE, ...) {
   lower_x <- max(0, x - d)
   upper_x <- x + d
 
-  lower <- max(0, (lower_x - z * sqrt(lower_x)) / T)
-  upper <- (upper_x + z * sqrt(upper_x)) / T
+  lower <- max(0, (lower_x - z * sqrt(lower_x)) / exposure)
+  upper <- (upper_x + z * sqrt(upper_x)) / exposure
 
   c(lower, upper)
 }
 
-ci_log <- function(x, T, conf.level, ...) {
+ci_log <- function(x, exposure, conf.level, ...) {
   alpha <- 1 - conf.level
   z <- qnorm(1 - alpha / 2)
 
-  if (x == 0) return(c(0, -log(alpha / 2) / T))
+  if (x == 0) return(c(0, -log(alpha / 2) / exposure))
 
-  rate <- x / T
+  rate <- x / exposure
   se <- 1 / sqrt(x)
 
   lower <- rate * exp(-z * se)
