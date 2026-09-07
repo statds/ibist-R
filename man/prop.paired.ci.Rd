@@ -31,7 +31,8 @@ prop.paired.ci(
 include \code{precision}, \code{grid.one}, and \code{grid.two}.}
 }
 \value{
-An object of class \code{"htest"}.
+An object of class \code{"ci"} containing the estimate and
+  confidence limits.
 }
 \description{
 Computes confidence intervals for the difference of two paired proportions.

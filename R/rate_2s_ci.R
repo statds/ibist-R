@@ -48,7 +48,8 @@
 #' \code{"exact"} method uses the exact Clopper-Pearson limits returned by
 #' \code{\link[stats]{binom.test}}.
 #'
-#' @return An object of class \code{"htest"}.
+#' @return An object of class \code{"ci"} containing the estimate and
+#'   confidence limits.
 #'
 #' @examples
 #' rate.2s.ci(c(151, 55), T = c(57518.1, 74573.5))
@@ -105,7 +106,7 @@ rate.2s.ci <- function(
         "T = c(", T[1], ", ", T[2], ")"
       )
     ),
-    class = "htest"
+    class = "ci"
   )
 }
 

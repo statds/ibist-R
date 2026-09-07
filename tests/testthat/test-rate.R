@@ -1,7 +1,8 @@
 test_that("rate.1s.ci returns stable exact intervals", {
   result <- rate.1s.ci(5, T = 10)
 
-  expect_s3_class(result, "htest")
+  expect_s3_class(result, "ci")
+  expect_output(print(result), "95% confidence interval")
   expect_equal(unname(result$estimate), 0.5)
   expect_equal(unname(result$conf.int), c(0.1623486, 1.1668332),
                tolerance = 1e-7)
@@ -33,7 +34,7 @@ test_that("rate.1s.ci Wilson-Hilferty continuity correction uses midpoint", {
 test_that("rate.2s.ci returns log-Wald rate ratio intervals", {
   result <- rate.2s.ci(x = c(151, 55), T = c(57518.1, 74573.5))
 
-  expect_s3_class(result, "htest")
+  expect_s3_class(result, "ci")
   expect_equal(unname(result$estimate["rate ratio"]), 3.559543,
                tolerance = 1e-6)
   expect_equal(as.numeric(result$conf.int), c(2.614178, 4.846780),

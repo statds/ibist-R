@@ -3,7 +3,7 @@ test_that("prop.paired.ci returns stable Wald-family intervals", {
   corrected <- prop.paired.ci(b = 8, c = 25, n = 180, method = "waldcc")
   agresti_min <- prop.paired.ci(b = 8, c = 25, n = 180, method = "agresti-min")
 
-  expect_s3_class(result, "htest")
+  expect_s3_class(result, "ci")
   expect_equal(result$estimate, c("proportion difference" = -17 / 180))
   expect_equal(as.numeric(result$conf.int), c(-0.155455, -0.03343391),
                tolerance = 1e-5)
@@ -37,7 +37,7 @@ test_that("prop.paired.ci supports Wang's exact interval", {
     b = 3, c = 0, n = 4, method = "wang", precision = 0.0001
   )
 
-  expect_s3_class(result, "htest")
+  expect_s3_class(result, "ci")
   expect_equal(as.numeric(result$conf.int), c(-0.2494, 0.9937),
                tolerance = 1e-4)
   expect_match(result$method, "Wang exact")

@@ -22,7 +22,8 @@ or.2x2.ci(
 \item{...}{Reserved for future extensions.}
 }
 \value{
-An object of class \code{"htest"}.
+An object of class \code{"ci"} containing the estimate and
+  confidence limits.
 }
 \description{
 Computes confidence intervals for the odds ratio in a 2 x 2 table.

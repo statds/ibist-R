@@ -64,7 +64,8 @@
 #' When \code{correct = TRUE}, continuity correction is applied on the count
 #' scale for methods that support it.
 #' 
-#' @return An object of class \code{"htest"}.
+#' @return An object of class \code{"ci"} containing the estimate and
+#'   confidence limits.
 #'
 #' @examples
 #' rate.1s.ci(5, 10)
@@ -114,7 +115,7 @@ rate.1s.ci <- function(
       method = paste(method, "CI for Poisson rate"),
       data.name = paste0("x = ", x, ", T = ", T)
     ),
-    class = "htest"
+    class = "ci"
   )
 }
 

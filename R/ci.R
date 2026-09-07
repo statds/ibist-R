@@ -1,0 +1,13 @@
+#' Print a Confidence Interval Object
+#'
+#' @param x An object of class \code{"ci"}.
+#' @param digits Number of significant digits to print.
+#' @param ... Reserved for future extensions.
+#'
+#' @export
+print.ci <- function(x, digits = getOption("digits"), ...) {
+  cat("\n", x$method, "\n", sep = "")
+  cat("\n", 100 * x$conf.level, "% confidence interval:\n", sep = "")
+  print(x$conf.int, digits = digits)
+  invisible(x)
+}

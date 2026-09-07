@@ -35,7 +35,8 @@ rate.1s.ci(
 \item{...}{Reserved for future extensions.}
 }
 \value{
-An object of class \code{"htest"}.
+An object of class \code{"ci"} containing the estimate and
+  confidence limits.
 }
 \description{
 Computes confidence intervals for a Poisson rate parameter

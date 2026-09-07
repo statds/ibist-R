@@ -36,7 +36,8 @@
 #' moderate because it searches over nuisance parameters and refines the
 #' confidence limits numerically.
 #'
-#' @return An object of class \code{"htest"}.
+#' @return An object of class \code{"ci"} containing the estimate and
+#'   confidence limits.
 #'
 #' @examples
 #' prop.paired.ci(b = 8, c = 25, n = 180)
@@ -110,7 +111,7 @@ prop.paired.ci <- function(
       ),
       data.name = paste0("b = ", b, ", c = ", c, ", n = ", n)
     ),
-    class = "htest"
+    class = "ci"
   )
 }
 

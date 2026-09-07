@@ -19,7 +19,8 @@
 #' and \code{"bp"} methods invert the conditional mid-p test based on the
 #' noncentral hypergeometric distribution.
 #'
-#' @return An object of class \code{"htest"}.
+#' @return An object of class \code{"ci"} containing the estimate and
+#'   confidence limits.
 #'
 #' @references
 #' Baptista, J., and Pike, M. C. (1977). Algorithm AS 115: Exact two-sided
@@ -83,7 +84,7 @@ or.2x2.ci <- function(
       ),
       data.name = deparse(substitute(x))
     ),
-    class = "htest"
+    class = "ci"
   )
 }
 

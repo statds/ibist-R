@@ -29,7 +29,8 @@ rate.2s.ci(
 \item{...}{Reserved for future extensions.}
 }
 \value{
-An object of class \code{"htest"}.
+An object of class \code{"ci"} containing the estimate and
+  confidence limits.
 }
 \description{
 Computes confidence intervals for the rate ratio

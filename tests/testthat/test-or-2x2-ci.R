@@ -4,7 +4,7 @@ test_that("or.2x2.ci returns stable Wald intervals", {
   wald <- or.2x2.ci(tab)
   adjusted <- or.2x2.ci(tab, method = "adjusted")
 
-  expect_s3_class(wald, "htest")
+  expect_s3_class(wald, "ci")
   expect_equal(wald$estimate, c("odds ratio" = 8.555556), tolerance = 1e-6)
   expect_equal(as.numeric(wald$conf.int), c(0.9904903, 73.9003),
                tolerance = 1e-6)
@@ -17,7 +17,7 @@ test_that("or.2x2.ci returns Baptista-Pike mid-p interval", {
 
   bp <- or.2x2.ci(tab, method = "bp")
 
-  expect_s3_class(bp, "htest")
+  expect_s3_class(bp, "ci")
   expect_equal(bp$estimate, c("odds ratio" = 8.555556), tolerance = 1e-6)
   expect_equal(as.numeric(bp$conf.int), c(1.3277, 98.8359),
                tolerance = 1e-4)
