@@ -131,7 +131,7 @@ rate.1s.ci <- function(
       method = paste(method, "CI for Poisson rate"),
       data.name = paste0("x = ", x, ", exposure = ", exposure)
     ),
-    class = "ci"
+    class = c("ibist_ci", "ci")
   )
 }
 

@@ -122,7 +122,7 @@ rate.2s.ci <- function(
         "exposure = c(", exposure[1], ", ", exposure[2], ")"
       )
     ),
-    class = "ci"
+    class = c("ibist_ci", "ci")
   )
 }
 

@@ -97,7 +97,7 @@ or.2x2.ci <- function(
       ),
       data.name = deparse(substitute(x))
     ),
-    class = "ci"
+    class = c("ibist_ci", "ci")
   )
 }
 

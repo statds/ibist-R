@@ -124,7 +124,7 @@ prop.paired.ci <- function(
       ),
       data.name = paste0("b = ", b, ", c = ", c, ", n = ", n)
     ),
-    class = "ci"
+    class = c("ibist_ci", "ci")
   )
 }
 
